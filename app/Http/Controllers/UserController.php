@@ -165,7 +165,7 @@ class UserController extends Controller
 				],
 			
 				'hidden' => [
-					['name' => 'page', 'value' => 1],
+					['name' => 'page', 'value' => $page],
 					['name' => 'ord', 'value' => $order_by],
 					['name' => 'srt', 'value' => $sort_by],
 				],

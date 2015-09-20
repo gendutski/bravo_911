@@ -156,7 +156,7 @@ var ContentLoader = function(box_element, title_element)
 				cls.renderForm($response.form, $response.form_data);
 				
 				if($response.type == 'table list'){
-					cls.renderTable($response.table_header, $response.table_data, $response.total_records);
+					cls.renderTable($response.table_header, $response.table_data, $response.total_records, $response.total_page);
 				}
 			},
 			beforeSend: function($jqXHR, $textStatus){
@@ -203,6 +203,19 @@ var ContentLoader = function(box_element, title_element)
 		});
 	}
 	
+	
+	/**
+	 * set load page
+	 * @access	public
+	 * @param	numeric
+	 * @return	boolean
+	 */
+	var loadPage = function(page){
+		$(box_element).find('form').find('input[type=hidden][name=page]').val(page);
+		$(box_element).find('form').submit();
+		
+		return false;
+	}
 	
 	/**
 	 * render form input/search
@@ -530,9 +543,10 @@ var ContentLoader = function(box_element, title_element)
 	 * @param	object
 	 * @return 	void
 	 */
-	var renderTable = function($header, $data, $total_records){
+	var renderTable = function($header, $data, $total_records, $total_page){
 		var cls = this;
 		$total_records = $total_records || 0;
+		$total_page = $total_page || 1;
 		
 		//box_row
 		var box_row = document.createElement('div');
@@ -715,6 +729,163 @@ var ContentLoader = function(box_element, title_element)
 			$(div).append(div2);
 			//total page end }
 			
+			
+			//paging start {
+			if($total_page > 1){
+				var div = document.createElement('div');
+				$(div).addClass('col-sm-6');
+				$(div_footer).append(div);
+				
+				var div2 = document.createElement('div');
+				$(div2).addClass('dataTables_paginate paging_simple_numbers');
+				$(div2).css({
+					"text-align":'right'
+				});
+				$(div).append(div2);
+				
+				var ul = document.createElement('ul');
+				$(ul).addClass('pagination');
+				$(div2).append(ul);
+				
+				//nampilkan beberapa button page(tidak semua)
+				var page_before = 2;
+				var page_after = 2;
+				var current_page = $(box_element).find('form').find('input[type=hidden][name=page]').val() || 1;
+				current_page = parseInt(current_page);
+				
+				var start_page = current_page - page_before;
+				if(start_page < 1){
+					page_after = page_after - (start_page - 1);
+					start_page = 1;
+				}
+				
+				var end_page = current_page + page_after;
+				if(end_page > $total_page){
+					start_page = start_page - (end_page - $total_page);
+					end_page = $total_page;
+					if(start_page < 1){ start_page = 1; }
+				}
+				
+				//first page
+				var li = document.createElement('li');
+				$(li).addClass('paginate_button previous');
+				$(li).attr('aria-controls', 'dataTables-example');
+				$(ul).append(li);
+				
+				var a = document.createElement('a');
+				$(li).append(a);
+				$(a).attr({
+					"href":'#',
+					"data-page":1
+				});
+				if(current_page == 1){
+					$(li).addClass('disabled');
+					$(a).click(function(){
+						return false;
+					});
+				} else {
+					$(a).click(function(){
+						return cls.loadPage($(this).attr('data-page'));
+					});
+				}
+				$(a).html('First');
+				
+				//prev page
+				var li = document.createElement('li');
+				$(li).addClass('paginate_button previous');
+				$(li).attr('aria-controls', 'dataTables-example');
+				$(ul).append(li);
+				
+				var a = document.createElement('a');
+				$(li).append(a);
+				$(a).attr({
+					"href":'#',
+					"data-page":(current_page-1)
+				});
+				if(current_page == 1){
+					$(li).addClass('disabled');
+					$(a).click(function(){
+						return false;
+					});
+				} else {
+					$(a).click(function(){
+						return cls.loadPage($(this).attr('data-page'));
+					});
+				}
+				$(a).html('Previous');
+				
+				//pages
+				for(pg = start_page; pg <= end_page; pg++){
+					var li = document.createElement('li');
+					$(li).addClass('paginate_button');
+					if(pg == current_page){
+						$(li).addClass('active');
+					}
+					$(li).attr('aria-controls', 'dataTables-example');
+					$(ul).append(li);
+					
+					var a = document.createElement('a');
+					$(li).append(a);
+					$(a).attr({
+						"href":'#',
+						"data-page":pg
+					});
+					$(a).click(function(){
+						return cls.loadPage($(this).attr('data-page'));
+					});
+					$(a).html(pg);
+				}
+				
+				//next page
+				var li = document.createElement('li');
+				$(li).addClass('paginate_button next');
+				$(li).attr('aria-controls', 'dataTables-example');
+				$(ul).append(li);
+				
+				var a = document.createElement('a');
+				$(li).append(a);
+				$(a).attr({
+					"href":'#',
+					"data-page":(current_page+1)
+				});
+				if(current_page == $total_page){
+					$(li).addClass('disabled');
+					$(a).click(function(){
+						return false;
+					});
+				} else {
+					$(a).click(function(){
+						return cls.loadPage($(this).attr('data-page'));
+					});
+				}
+				$(a).html('Next');
+				
+				//last page
+				var li = document.createElement('li');
+				$(li).addClass('paginate_button next');
+				$(li).attr('aria-controls', 'dataTables-example');
+				$(ul).append(li);
+				
+				var a = document.createElement('a');
+				$(li).append(a);
+				$(a).attr({
+					"href":'#',
+					"data-page":$total_page
+				});
+				if(current_page == $total_page){
+					$(li).addClass('disabled');
+					$(a).click(function(){
+						return false;
+					});
+				} else {
+					$(a).click(function(){
+						return cls.loadPage($(this).attr('data-page'));
+					});
+				}
+				$(a).html('Last');
+			}
+			//paging end }
+			
 			//------footer end }
 		} else {
 			$(box_row).append('<div class="col-lg-12" style="margin-top:.5em">\
@@ -876,6 +1047,7 @@ var ContentLoader = function(box_element, title_element)
 		deleteData:deleteData,
 		isLoading:isLoading,
 		load:load,
+		loadPage:loadPage,
 		renderForm:renderForm,
 		renderTable:renderTable,
 		sort:sort,

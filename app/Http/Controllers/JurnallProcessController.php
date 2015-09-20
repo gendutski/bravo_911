@@ -47,7 +47,7 @@ class JurnallProcessController extends Controller
 			->joinAccountCode();
 		
 		//get total page start {
-		$limit = 10;
+		$limit = 1;
 		$total_records = $jurnall->count();
 		$total_pages = ceil($total_records/$limit);
 		//get total page end }
@@ -165,7 +165,7 @@ class JurnallProcessController extends Controller
 				],
 			
 				'hidden' => [
-					['name' => 'page', 'value' => 1],
+					['name' => 'page', 'value' => $page],
 					['name' => 'ord', 'value' => $order_by],
 					['name' => 'srt', 'value' => $sort_by],
 				],

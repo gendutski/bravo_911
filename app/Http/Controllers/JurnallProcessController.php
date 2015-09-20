@@ -39,11 +39,12 @@ class JurnallProcessController extends Controller
 		//param request
 		$order_by = $request->input('ord', 'tanggal');
 		$sort_by = $request->input('srt', 'desc');
-		$tanggal = $request->input('created_at', ['', '']);
+		$tanggal = $request->input('tanggal', ['', '']);
 		$page = $request->input('page', 1);
 		
 		//search data
-		$jurnall = JurnallProcess::search(array('tanggal' => $tanggal));
+		$jurnall = JurnallProcess::search(array('tanggal' => $tanggal))
+			->joinAccountCode();
 		
 		//get total page start {
 		$limit = 10;
@@ -72,28 +73,11 @@ class JurnallProcessController extends Controller
 		
 		
 		//get result start {
-		$jurnall
-			->select(
-				'*',
-				DB::raw("to_char(tanggal, 'DD-Mon-YYYY') as str_tanggal")
-			)
+		$result = $jurnall
+			->orderBy($order_by, $sort_by)
 			->offset($offset)
-			->take($limit);
-		
-		if($order_by == 'kode')
-		{
-			$result = $jurnall
-				->with(['account_code' => function($query) use($order_by, $sort_by){
-					$query->orderBy($order_by, $sort_by);
-				}])
-				->get();
-		}
-		else
-		{
-			$result = $jurnall
-				->orderBy($order_by, $sort_by)
-				->get();
-		}
+			->take($limit)
+			->get();
 		
 		$table_data = array();
 		$pos = $offset;

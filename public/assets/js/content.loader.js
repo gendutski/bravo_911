@@ -156,7 +156,7 @@ var ContentLoader = function(box_element, title_element)
 				cls.renderForm($response.form, $response.form_data);
 				
 				if($response.type == 'table list'){
-					cls.renderTable($response.table_header, $response.table_data);
+					cls.renderTable($response.table_header, $response.table_data, $response.total_records);
 				}
 			},
 			beforeSend: function($jqXHR, $textStatus){
@@ -530,8 +530,9 @@ var ContentLoader = function(box_element, title_element)
 	 * @param	object
 	 * @return 	void
 	 */
-	var renderTable = function($header, $data){
+	var renderTable = function($header, $data, $total_records){
 		var cls = this;
+		$total_records = $total_records || 0;
 		
 		//box_row
 		var box_row = document.createElement('div');
@@ -692,6 +693,29 @@ var ContentLoader = function(box_element, title_element)
 				});
 			});
 			//------data end }
+			
+			//------footer start{
+			var div_footer = document.createElement('div');
+			$(div_footer).addClass('row');
+			$(div_panel).append(div_footer);
+			
+			//total page start {
+			var div = document.createElement('div');
+			$(div).addClass('col-sm-6');
+			$(div_footer).append(div);
+			
+			var div2 = document.createElement('div');
+			$(div2).addClass('dataTables_info');
+			$(div2).attr({
+				"role":'alert',
+				"aria-live":'polite',
+				'aria-relevant':'all'
+			});
+			$(div2).html('Total ' + $total_records + ($total_records>1? ' records':' record'));
+			$(div).append(div2);
+			//total page end }
+			
+			//------footer end }
 		} else {
 			$(box_row).append('<div class="col-lg-12" style="margin-top:.5em">\
 				<div class="alert alert-danger"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span> Data tidak di temukan</div>\

@@ -250,22 +250,22 @@ class AccountCodeController extends Controller
 		
 		//table header start{
 		$table_header = array();
-		$table_header[] = ['title' => 'No', 'width' => '8%'];
+		$table_header[0][] = ['title' => 'No', 'width' => '8%'];
 		$arr_width = ['32%', '60%'];
 		
 		if($has_edit && $has_delete)
 		{
-			$table_header[] = ['title' => '', 'width' => '8%'];
+			$table_header[0][] = ['title' => '', 'width' => '8%'];
 			$arr_width = ['32%', '52%'];
 		}
 		elseif($has_edit || $has_delete)
 		{
-			$table_header[] = ['title' => '', 'width' => '4%'];
+			$table_header[0][] = ['title' => '', 'width' => '4%'];
 			$arr_width = ['32%', '56%'];
 		}
 		
-		$table_header[] = ['title' => 'Kode', 'width' => $arr_width[0], 'id' => 'kode', 'is_sort' => ($order_by == 'kode'? ($sort_by == 'desc'? 'desc':'asc'):'')];
-		$table_header[] = ['title' => 'Uraian Rekening', 'width' => $arr_width[1], 'id' => 'uraian_rekening', 'is_sort' => ($order_by == 'uraian_rekening'? ($sort_by == 'desc'? 'desc':'asc'):'')];
+		$table_header[0][] = ['title' => 'Kode', 'width' => $arr_width[0], 'id' => 'kode', 'is_sort' => ($order_by == 'kode'? ($sort_by == 'desc'? 'desc':'asc'):'')];
+		$table_header[0][] = ['title' => 'Uraian Rekening', 'width' => $arr_width[1], 'id' => 'uraian_rekening', 'is_sort' => ($order_by == 'uraian_rekening'? ($sort_by == 'desc'? 'desc':'asc'):'')];
 		//table header end }
 		
 		//get result start {

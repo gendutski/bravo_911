@@ -27,7 +27,7 @@ class JurnallProcess extends Model
 				$query
 					->addSelect('account_codes.kode')
 					->addSelect($this->table.'.*')
-					->addSelect(DB::raw("to_char({$this->table}.tanggal, 'DD-Mon-YYYY HH24:MI:SS') as str_tanggal"));
+					->addSelect(DB::raw("to_char({$this->table}.tanggal, 'DD-Mon-YYYY') as str_tanggal"));
 				break;
 		}
 		

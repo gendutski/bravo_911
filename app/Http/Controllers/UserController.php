@@ -52,23 +52,23 @@ class UserController extends Controller
 		
 		//table header start{
 		$table_header = array();
-		$table_header[] = ['title' => 'No', 'width' => '8%'];
+		$table_header[0][] = ['title' => 'No', 'width' => '8%'];
 		$arr_width = ['36%', '36%'];
 		
 		if($has_edit && $has_delete)
 		{
-			$table_header[] = ['title' => '', 'width' => '8%'];
+			$table_header[0][] = ['title' => '', 'width' => '8%'];
 			$arr_width = ['32%', '32%'];
 		}
 		elseif($has_edit || $has_delete)
 		{
-			$table_header[] = ['title' => '', 'width' => '4%'];
+			$table_header[0][] = ['title' => '', 'width' => '4%'];
 			$arr_width = ['34%', '34%'];
 		}
 		
-		$table_header[] = ['title' => 'Nama Lengkap', 'width' => $arr_width[0], 'id' => 'name', 'is_sort' => ($order_by == 'name'? ($sort_by == 'desc'? 'desc':'asc'):'')];
-		$table_header[] = ['title' => 'Email', 'width' => $arr_width[1], 'id' => 'email', 'is_sort' => ($order_by == 'email'? ($sort_by == 'desc'? 'desc':'asc'):'')];
-		$table_header[] = ['title' => 'Created', 'width' => '20%', 'id' => 'created_at', 'is_sort' => ($order_by == 'created_at'? ($sort_by == 'desc'? 'desc':'asc'):'')];
+		$table_header[0][] = ['title' => 'Nama Lengkap', 'width' => $arr_width[0], 'id' => 'name', 'is_sort' => ($order_by == 'name'? ($sort_by == 'desc'? 'desc':'asc'):'')];
+		$table_header[0][] = ['title' => 'Email', 'width' => $arr_width[1], 'id' => 'email', 'is_sort' => ($order_by == 'email'? ($sort_by == 'desc'? 'desc':'asc'):'')];
+		$table_header[0][] = ['title' => 'Created', 'width' => '20%', 'id' => 'created_at', 'is_sort' => ($order_by == 'created_at'? ($sort_by == 'desc'? 'desc':'asc'):'')];
 		//table header end }
 		
 		
@@ -683,8 +683,10 @@ class UserController extends Controller
 			return response('Forbidden', 403);
 		}
 		
+		//get data
 		$user = User::findOrFail($id);
 		
+		//generate result
 		$return_result = $this->create($request)->original;
 		
 		//set action
@@ -697,6 +699,7 @@ class UserController extends Controller
 		$tampung = array_pop($return_result['form']['elements_blok'][0]['fields']);
 		$tampung = array_pop($return_result['form']['elements_blok'][0]['fields']);
 		
+		//set form data
 		$return_result['form_data'] = [
 			'name' => $user->name,
 			'email' => $user->email

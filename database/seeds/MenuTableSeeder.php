@@ -111,7 +111,7 @@ class MenuTableSeeder extends Seeder
 				//'id' => 12,
 				'name' => 'Human Resource',
 				'title' => 'Human Resource',
-				'api_endpoint' => '/human_resource',
+				'api_endpoint' => null,
 				'parent_id' => 3,
 				'rank' => 1
 			],

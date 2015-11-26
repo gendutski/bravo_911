@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreatePositionsTable extends Migration
+class CreateParamsTable extends Migration
 {
 	/**
 	 * Run the migrations.
@@ -12,10 +12,11 @@ class CreatePositionsTable extends Migration
 	 */
 	public function up()
 	{
-		Schema::create('positions', function (Blueprint $table) {
+		Schema::create('params', function (Blueprint $table) {
 			$table->increments('id');
-			$table->integer('position_types_id');
-			$table->string('name', 50);
+			$table->string('name', 100);
+			$table->enum('type', ['outsource-position', 'staff-position', 'religion', 'tribe', 'location', 'disease', 'formal-education', 'training', 'language', 'district', 'status-of-residence']);
+			
 			$table->integer('created_by');
 			$table->integer('updated_by');
 			$table->timestamps();
@@ -29,6 +30,6 @@ class CreatePositionsTable extends Migration
 	 */
 	public function down()
 	{
-		Schema::drop('positions');
+		Schema::drop('params');
 	}
 }

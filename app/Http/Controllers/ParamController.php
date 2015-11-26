@@ -6,27 +6,24 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
-use App\Models\AccountCode;
-use App\Models\AccountCodeType;
 use App\Models\Menu;
+use App\Models\Param;
 use DB;
 
-class AccountCodeController extends Controller
+class ParamController extends Controller
 {
 	private $menu_id = array(
-		'aktiva' => 23,
-		'pasiva' => 24,
-		'modal' => 25,
-		'pendapatan' => 26,
-		'biaya' => 27
-	);
-	
-	private $account_type_id = array(
-		'aktiva' => 1,
-		'pasiva' => 2,
-		'modal' => 3,
-		'pendapatan' => 4,
-		'biaya' => 5
+		'outsource-position' => 31,
+		'staff-position' => 32,
+		'religion' => 33,
+		'tribe' => 34,
+		'location' => 35,
+		'district' => 36,
+		'disease' => 37,
+		'formal-education' => 38,
+		'training' => 39,
+		'language' => 40,
+		'status-of-residence' => 41,
 	);
 	
 	/**
@@ -66,7 +63,7 @@ class AccountCodeController extends Controller
 			'form' => [
 				'attr' => [
 					'method' => 'post',
-					'action' => url('account_code?type='.$type),
+					'action' => url('param?type='.$type),
 					'role' => 'form'
 				],
 			
@@ -80,21 +77,12 @@ class AccountCodeController extends Controller
 						'css_class' => 'col-lg-6',
 						'fields' => [
 							[
-								'label' => 'Kode', 
+								'label' => 'Nama', 
 								'element' => 'input',
 								'attr' => [
 									'type' => 'text', 
-									'name' => 'kode',
-									'maxlength' => 30
-								]
-							],
-							[
-								'label' => 'Uraian Rekening', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'uraian_rekening',
-									'maxlength' => 255
+									'name' => 'name',
+									'maxlength' => 100
 								]
 							],
 						]
@@ -170,13 +158,11 @@ class AccountCodeController extends Controller
 		$this->validate(
 			$request, 
 			[
-				'kode' => 'required|max:30|unique:account_codes,kode,NULL,id,type_id,'.$this->get_($this->account_type_id, $type),
-				'uraian_rekening' => 'required|max:255',
+				'name' => 'required|max:100|unique:params,name,NULL,id,type,'.$type,
 			],
 			[
-				'kode.required' => '<span style="font-weight:bold;font-style:italic">Kode</span> harap di isi',
-				'kode.unique' => 'Kode <span style="font-weight:bold;font-style:italic">'.$request->input('kode').'</span> sudah terdaftar. Harap pilih kode yang lain!',
-				'uraian_rekening.required' => '<span style="font-weight:bold;font-style:italic">Uraian Rekening</span> harap di isi',
+				'name.required' => '<span style="font-weight:bold;font-style:italic">Nama</span> harap di isi',
+				'name.unique' => 'Nama <span style="font-weight:bold;font-style:italic">'.$request->input('name').'</span> sudah terdaftar. Harap pilih nama yang lain!',
 			]
 		);
 		
@@ -185,17 +171,16 @@ class AccountCodeController extends Controller
 		$menu_title = $menu->title;
 		
 		//save
-		$ac = new AccountCode;
-		$ac->kode = $request->input('kode');
-		$ac->type_id = $this->get_($this->account_type_id, $type);
-		$ac->uraian_rekening = $request->input('uraian_rekening');
-		$ac->created_by = $request->user()->id;
-		$ac->updated_by = $request->user()->id;
-		if($ac->save())
+		$params = new Param;
+		$params->name = $request->input('name');
+		$params->type = $type;
+		$params->created_by = $request->user()->id;
+		$params->updated_by = $request->user()->id;
+		if($params->save())
 		{
 			return response([
 				'url' => '',
-				'api_endpoint' => url('account_code/'.$type),
+				'api_endpoint' => url('param/'.$type),
 				'api_method' => 'GET',
 				'title' => $menu_title
 			], 200);
@@ -222,22 +207,19 @@ class AccountCodeController extends Controller
 		$menu_title = $menu->title;
 		$menu_name = $menu->name;
 		
-		//account code type
-		$ac_type = AccountCodeType::findOrFail($this->get_($this->account_type_id, $id));
-		
 		//param request
 		$order_by = $request->input('ord', 'created_at');
 		$sort_by = $request->input('srt', 'asc');
-		$search['kode'] = $request->input('kode', '');
-		$search['uraian_rekening'] = $request->input('uraian_rekening', '');
+		$search['name'] = $request->input('name', '');
+		$search['type'] = $id;
 		$page = $request->input('page', 1);
 		
-		//search account code
-		$ac = $ac_type->account_code()->search($search);
+		//search params table
+		$params = Param::search($search);
 		
 		//get total page start {
 		$limit = 10;
-		$total_records = $ac->count();
+		$total_records = $params->count();
 		$total_pages = ceil($total_records/$limit);
 		//get total page end }
 		
@@ -251,25 +233,24 @@ class AccountCodeController extends Controller
 		//table header start{
 		$table_header = array();
 		$table_header[0][] = ['title' => 'No', 'width' => '8%'];
-		$arr_width = ['32%', '60%'];
+		$arr_width = ['92%'];
 		
 		if($has_edit && $has_delete)
 		{
 			$table_header[0][] = ['title' => '', 'width' => '8%'];
-			$arr_width = ['32%', '52%'];
+			$arr_width = ['84%'];
 		}
 		elseif($has_edit || $has_delete)
 		{
 			$table_header[0][] = ['title' => '', 'width' => '4%'];
-			$arr_width = ['32%', '56%'];
+			$arr_width = ['88%'];
 		}
 		
-		$table_header[0][] = ['title' => 'Kode', 'width' => $arr_width[0], 'id' => 'kode', 'is_sort' => ($order_by == 'kode'? ($sort_by == 'desc'? 'desc':'asc'):'')];
-		$table_header[0][] = ['title' => 'Uraian Rekening', 'width' => $arr_width[1], 'id' => 'uraian_rekening', 'is_sort' => ($order_by == 'uraian_rekening'? ($sort_by == 'desc'? 'desc':'asc'):'')];
+		$table_header[0][] = ['title' => 'Nama', 'width' => $arr_width[0], 'id' => 'name', 'is_sort' => ($order_by == 'name'? ($sort_by == 'desc'? 'desc':'asc'):'')];
 		//table header end }
 		
 		//get result start {
-		$result = $ac
+		$result = $params
 			->orderBy($order_by, $sort_by)
 			->offset($offset)
 			->take($limit)
@@ -295,11 +276,11 @@ class AccountCodeController extends Controller
 						'attr' => [
 							'title' => 'Edit '.$menu_name,
 							'data-title' => 'Edit '.$menu_title,
-							'data-endpoint' => url("account_code/{$row->id}/edit?type={$id}"),
+							'data-endpoint' => url("param/{$row->id}/edit?type={$id}"),
 							'data-method' => 'GET'
 						],
 						'redirect' => [
-							'url' => url('account_code/'.$id),
+							'url' => url('param/'.$id),
 							'param' => $request->all()
 						]
 					];
@@ -312,7 +293,7 @@ class AccountCodeController extends Controller
 						'attr' => [
 							'title' => 'Delete '.$menu_name,
 							'data-title' => 'Delete '.$menu_title,
-							'data-endpoint' => url("account_code/{$row->id}?type={$id}"),
+							'data-endpoint' => url("param/{$row->id}?type={$id}"),
 							'data-method' => 'delete',
 							'data-token' => csrf_token()
 						]
@@ -322,16 +303,14 @@ class AccountCodeController extends Controller
 				$table_data[] = [
 					['type' => 'text', 'text' => $pos],
 					$row_button,
-					['type' => 'text', 'text' => $row->kode],
-					['type' => 'text', 'text' => $row->uraian_rekening],
+					['type' => 'text', 'text' => $row->name],
 				];
 			}
 			else
 			{
 				$table_data[] = [
 					['type' => 'text', 'text' => $pos],
-					['type' => 'text', 'text' => $row->kode],
-					['type' => 'text', 'text' => $row->uraian_rekening],
+					['type' => 'text', 'text' => $row->name]
 				];
 			}
 		}
@@ -343,11 +322,11 @@ class AccountCodeController extends Controller
 			'form' => [
 				'attr' => [
 					'method' => 'get',
-					'action' => url('/account_code/'.$id),
+					'action' => url('/param/'.$id),
 					'role' => 'form',
 					'data-type' => 'table list',
 					'data-title' => $menu_title,
-					'data-endpoint' => url('/account_code/'.$id),
+					'data-endpoint' => url('/param/'.$id),
 					'data-method' => 'GET'
 				],
 			
@@ -362,24 +341,11 @@ class AccountCodeController extends Controller
 						'css_class' => 'col-lg-6',
 						'fields' => [
 							[
-								'label' => 'Kode', 
+								'label' => 'Nama', 
 								'element' => 'input',
 								'attr' => [
 									'type' => 'text', 
-									'name' => 'kode',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Uraian Rekening', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text',
-									'name' => 'uraian_rekening',
+									'name' => 'name',
 								]
 							],
 						]
@@ -414,8 +380,7 @@ class AccountCodeController extends Controller
 				]
 			],
 			'form_data' => [
-				'kode' => $search['kode'],
-				'uraian_rekening' => $search['uraian_rekening'],
+				'name' => $search['name'],
 			],
 			
 			'total_records' => $total_records,
@@ -429,18 +394,18 @@ class AccountCodeController extends Controller
 		//punya akses post, kasih button input user
 		if($request->user()->hasMenu($this->get_($this->menu_id, $id), 'post'))
 		{
-			$return_result['form']['elements_blok'][3]['fields'][] = [
+			$return_result['form']['elements_blok'][2]['fields'][] = [
 				'label' => '<span class="glyphicon glyphicon-plus"></span> Tambah '.$menu_name, 
 				'element' => 'button',
 				'attr' => [
 					'type' => 'button',
 					'class' => 'btn btn-success',
 					'data-title' => 'Input '.$menu_title,
-					'data-endpoint' => url('account_code/create?type='.$id),
+					'data-endpoint' => url('param/create?type='.$id),
 					'data-method' => 'get'
 				],
 				'redirect' => [
-					'url' => url('account_code/'.$id),
+					'url' => url('param/'.$id),
 					'param' => $request->all()
 				]
 			];
@@ -466,20 +431,19 @@ class AccountCodeController extends Controller
 			return response('Forbidden', 403);
 		}
 		
-		$ac = AccountCode::findOrFail($id);
-		if($ac->type_id != $this->get_($this->account_type_id, $type)){ return response('not found', 404); }
+		$params = Param::findOrFail($id);
+		if($params->type != $type){ return response('not found', 404); }
 		
 		$return_result = $this->create($request)->original;
 		
 		//set action
-		$return_result['form']['attr']['action'] = url('account_code/'.$id.'?type='.$type);
+		$return_result['form']['attr']['action'] = url('param/'.$id.'?type='.$type);
 		
 		//set method
 		$return_result['form']['attr']['method'] = 'put';
 		
 		$return_result['form_data'] = [
-			'kode' => $ac->kode,
-			'uraian_rekening' => $ac->uraian_rekening
+			'name' => $params->name,
 		];
 		
 		return response($return_result, 200);
@@ -508,13 +472,11 @@ class AccountCodeController extends Controller
 		$this->validate(
 			$request, 
 			[
-				'kode' => 'required|max:30|unique:account_codes,kode,'.$id.',id,type_id,'.$this->get_($this->account_type_id, $type),
-				'uraian_rekening' => 'required|max:255',
+				'name' => 'required|max:100|unique:params,name,'.$id.',id,type,'.$type,
 			],
 			[
-				'kode.required' => '<span style="font-weight:bold;font-style:italic">Kode</span> harap di isi',
-				'kode.unique' => 'Kode <span style="font-weight:bold;font-style:italic">'.$request->input('kode').'</span> sudah terdaftar. Harap pilih kode yang lain!',
-				'uraian_rekening.required' => '<span style="font-weight:bold;font-style:italic">Uraian Rekening</span> harap di isi',
+				'name.required' => '<span style="font-weight:bold;font-style:italic">Nama</span> harap di isi',
+				'name.unique' => 'Nama <span style="font-weight:bold;font-style:italic">'.$request->input('name').'</span> sudah terdaftar. Harap pilih kode yang lain!',
 			]
 		);
 		
@@ -522,17 +484,16 @@ class AccountCodeController extends Controller
 		$menu = Menu::findOrFail($this->get_($this->menu_id, $type));
 		$menu_title = $menu->title;
 		
-		$redirect_endpoint = $request->input('_redirect', url('account_code/'.$type));
+		$redirect_endpoint = $request->input('_redirect', url('param/'.$type));
 		
 		//get data
-		$user = AccountCode::findOrFail($id);
+		$params = Param::findOrFail($id);
 		
 		//save data
-		$user->kode = $request->input('kode');
-		$user->uraian_rekening = $request->input('uraian_rekening');
-		$user->updated_by = $request->user()->id;
+		$params->name = $request->input('name');
+		$params->updated_by = $request->user()->id;
 		
-		if($user->save())
+		if($params->save())
 		{
 			return response([
 				'url' => '',
@@ -563,8 +524,8 @@ class AccountCodeController extends Controller
 		
 		if(is_numeric($id))
 		{
-			$ac = AccountCode::findOrFail($id);
-			if($ac->delete())
+			$params = Param::findOrFail($id);
+			if($params->delete())
 			{
 				return response(['result' => true], 200);
 			}
@@ -573,7 +534,8 @@ class AccountCodeController extends Controller
 		return response('bad request', 400);
 	}
 	
-	//cek menu_id dan account_type_id
+	
+	//cek menu_id
 	private function get_($key, $id)
 	{
 		if(array_key_exists($id, $key))
@@ -582,5 +544,4 @@ class AccountCodeController extends Controller
 		}
 		return 0;
 	}
-	
 }

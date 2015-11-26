@@ -196,7 +196,7 @@ class MenuTableSeeder extends Seeder
 				'title' => 'Back Up System',
 				'api_endpoint' => null,
 				'parent_id' => 6,
-				'rank' => 2
+				'rank' => 3
 			],
 			
 			[
@@ -258,6 +258,109 @@ class MenuTableSeeder extends Seeder
 				'parent_id' => 12,
 				'rank' => 2
 			],
+			
+			
+			
+			[
+				//'id' => 30,
+				'name' => 'Parameter',
+				'title' => 'Parameter',
+				'api_endpoint' => null,
+				'parent_id' => 6,
+				'rank' => 2
+			],
+			
+			
+			
+			[
+				//'id' => 31,
+				'name' => 'Posisi Outsource',
+				'title' => 'Posisi Outsource',
+				'api_endpoint' => '/param/outsource-position',
+				'parent_id' => 30,
+				'rank' => 1
+			],
+			[
+				//'id' => 32,
+				'name' => 'Posisi Staff',
+				'title' => 'Posisi Staff',
+				'api_endpoint' => '/param/staff-position',
+				'parent_id' => 30,
+				'rank' => 2
+			],
+			[
+				//'id' => 33,
+				'name' => 'Agama',
+				'title' => 'Agama',
+				'api_endpoint' => '/param/religion',
+				'parent_id' => 30,
+				'rank' => 3
+			],
+			[
+				//'id' => 34,
+				'name' => 'Suku Bangsa',
+				'title' => 'Suku Bangsa',
+				'api_endpoint' => '/param/tribe',
+				'parent_id' => 30,
+				'rank' => 4
+			],
+			[
+				//'id' => 35,
+				'name' => 'Lokasi',
+				'title' => 'Lokasi',
+				'api_endpoint' => '/param/location',
+				'parent_id' => 30,
+				'rank' => 5
+			],
+			[
+				//'id' => 36,
+				'name' => 'Kota / Kabupaten',
+				'title' => 'Kota / Kabupaten',
+				'api_endpoint' => '/param/district',
+				'parent_id' => 30,
+				'rank' => 6
+			],
+			[
+				//'id' => 37,
+				'name' => 'Jenis Penyakit',
+				'title' => 'Jenis Penyakit',
+				'api_endpoint' => '/param/disease',
+				'parent_id' => 30,
+				'rank' => 7
+			],
+			[
+				//'id' => 38,
+				'name' => 'Pendidikan Formal',
+				'title' => 'Pendidikan Formal',
+				'api_endpoint' => '/param/formal-education',
+				'parent_id' => 30,
+				'rank' => 8
+			],
+			[
+				//'id' => 39,
+				'name' => 'Pelatihan',
+				'title' => 'Pelatihan',
+				'api_endpoint' => '/param/training',
+				'parent_id' => 30,
+				'rank' => 9
+			],
+			[
+				//'id' => 40,
+				'name' => 'Bahasa',
+				'title' => 'Bahasa',
+				'api_endpoint' => '/param/language',
+				'parent_id' => 30,
+				'rank' => 10
+			],
+			[
+				//'id' => 41,
+				'name' => 'Status Tinggal',
+				'title' => 'Status Tempat Tiinggal',
+				'api_endpoint' => '/param/status-of-residence',
+				'parent_id' => 30,
+				'rank' => 11
+			],
+			
 			
 		]);
 	}

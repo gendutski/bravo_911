@@ -25,7 +25,9 @@ Route::get('logout', 'Auth\AuthController@getLogout');
 Route::group(['prefix' => '/', 'middleware' => 'auth'], function(){
 	Route::get('', 'HomeController@index');
 	Route::resource('account_code', 'AccountCodeController');
+	Route::resource('human_resource', 'HumanResourceController');
 	Route::resource('jurnall_process', 'JurnallProcessController');
+	Route::resource('param', 'ParamController');
 	Route::resource('user', 'UserController');
 });
 

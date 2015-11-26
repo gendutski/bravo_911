@@ -18,8 +18,7 @@ class DatabaseSeeder extends Seeder
 		$this->call(MenuTableSeeder::class);
 		$this->call(UserMenuTableSeed::class);
 		$this->call(AccountCodeTypeTable::class);
-		$this->call(PositionTypeTableSeed::class);
-		$this->call(ReligionTableSeed::class);
+		$this->call(ParamTableSeeder::class);
 
 		Model::reguard();
 	}

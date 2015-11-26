@@ -304,7 +304,6 @@ class JurnallProcessController extends Controller
 								'label' => 'Kode', 
 								'element' => 'select',
 								'attr' => [
-									'type' => 'text', 
 									'name' => 'account_code_id',
 								],
 								'optgroup' => $drop_down

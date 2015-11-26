@@ -439,7 +439,12 @@ var ContentLoader = function(box_element, title_element)
 						} catch(err){
 							
 						}
+					} else if(elm.element == 'blank_div'){
+						var element = document.createElement('div');
+						$(element).attr(elm.attr);
 						
+						//append data
+						$(div).append(element);
 					} else {
 						//create div element
 						var div2 = document.createElement('div');

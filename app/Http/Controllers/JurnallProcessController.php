@@ -156,83 +156,77 @@ class JurnallProcessController extends Controller
 		
 		
 		//return result
-		$return_result = [
-			'type' => 'table list',
-			'form' => [
+		
+		//type
+		$return_result['type'] = 'table list';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'get',
+			'action' => url('jurnall_process'),
+			'role' => 'form',
+			'data-type' => 'table list',
+			'data-title' => $menu_title,
+			'data-endpoint' => url('jurnall_process'),
+			'data-method' => 'GET'
+		];
+		
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => 'page', 'value' => $page],
+			['name' => 'ord', 'value' => $order_by],
+			['name' => 'srt', 'value' => $sort_by],
+		];
+		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		$return_result['form']['elements'][0][0][] = [
+			'label' => 'Tanggal', 
+			'element' => 'datepicker_range',
+			'attr' => [
+				'name' => 'tanggal',
+			]
+		];
+		
+		//void block
+		$return_result['form']['elements'][0][1] = array();
+		
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
+				'element' => 'button',
 				'attr' => [
-					'method' => 'get',
-					'action' => url('jurnall_process'),
-					'role' => 'form',
-					'data-type' => 'table list',
-					'data-title' => $menu_title,
-					'data-endpoint' => url('jurnall_process'),
-					'data-method' => 'GET'
-				],
-			
-				'hidden' => [
-					['name' => 'page', 'value' => $page],
-					['name' => 'ord', 'value' => $order_by],
-					['name' => 'srt', 'value' => $sort_by],
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Tanggal', 
-								'element' => 'datepicker_range',
-								'attr' => [
-									'name' => 'tanggal',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-						]
-					],
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
 				]
 			],
-			'form_data' => [
-				'tanggal' => [$tanggal[0], $tanggal[1]]
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
 			],
-			
-			'total_records' => $total_records,
-			'total_page' => $total_pages,
-			
-			'table_header' => $table_header,
-			
-			'table_data' => $table_data
 		];
+		
+		//form data		
+		$return_result['form_data'] = [
+			'tanggal' => [$tanggal[0], $tanggal[1]]
+		];
+		
+		$return_result['total_records'] = $total_records;
+		$return_result['total_page'] = $total_pages;
+		$return_result['table_header'] = $table_header;
+		$return_result['table_data'] = $table_data;
 		
 		//punya akses post, kasih button input user
 		if($request->user()->hasMenu($this->menu_id, 'post'))
 		{
-			$return_result['form']['elements_blok'][2]['fields'][] = [
+			$return_result['form']['elements'][1][0][] = [
 				'label' => '<span class="glyphicon glyphicon-plus"></span> Tambah '.$menu_title, 
 				'element' => 'button',
 				'attr' => [
@@ -274,128 +268,118 @@ class JurnallProcessController extends Controller
 		//drop down account code
 		$drop_down = AccountCodeType::dropDown();
 		
-		$return_result = [
-			'type' => 'input form',
-			'form' => [
-				'attr' => [
-					'method' => 'post',
-					'action' => url('jurnall_process'),
-					'role' => 'form'
-				],
+		//type
+		$return_result['type'] = 'input form';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'post',
+			'action' => url('jurnall_process'),
+			'role' => 'form'
+		];
 			
-				'hidden' => [
-					['name' => '_token', 'value' => csrf_token()],
-					['name' => '_redirect', 'value' => $redirect_url]
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Tanggal', 
-								'element' => 'datepicker',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'tanggal',
-								]
-							],
-							[
-								'label' => 'Kode', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'account_code_id',
-								],
-								'optgroup' => $drop_down
-							],
-							[
-								'label' => 'Rekening', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'rekening',
-									'maxlength' => 30
-								]
-							],
-						]
-					],
-					
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Uraian', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'uraian',
-									'maxlength' => 255
-								]
-							],
-							[
-								'label' => 'Debet', 
-								'element' => 'number_format',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'debet',
-								]
-							],
-							[
-								'label' => 'Kredit', 
-								'element' => 'number_format',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'kredit',
-								]
-							],
-						]
-					],
-					
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Submit', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-success',
-									'style' => 'margin-right:5px',
-									'data-title' => $menu_title,
-									'data-endpoint' => $redirect_url,
-									'data-method' => 'GET'
-								]
-							]
-						]
-					],
-				]
-			],
-			'form_data' => []
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => '_token', 'value' => csrf_token()],
+			['name' => '_redirect', 'value' => $redirect_url]
 		];
 		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0] = [
+			[
+				'label' => 'Tanggal', 
+				'element' => 'datepicker',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'tanggal',
+				]
+			],
+			[
+				'label' => 'Kode', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'account_code_id',
+				],
+				'optgroup' => $drop_down
+			],
+			[
+				'label' => 'Rekening', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'rekening',
+					'maxlength' => 30
+				]
+			],
+		];
+		
+		//block 2
+		$return_result['form']['elements'][0][1] = [
+			[
+				'label' => 'Uraian', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'uraian',
+					'maxlength' => 255
+				]
+			],
+			[
+				'label' => 'Debet', 
+				'element' => 'number_format',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'debet',
+				]
+			],
+			[
+				'label' => 'Kredit', 
+				'element' => 'number_format',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'kredit',
+				]
+			],
+		];
+		
+		//submit block
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => 'Submit', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-success',
+					'style' => 'margin-right:5px',
+					'data-title' => $menu_title,
+					'data-endpoint' => $redirect_url,
+					'data-method' => 'GET'
+				]
+			]
+		];
+		
+		$return_result['form_data'] = [];
 		return response($return_result, 200);
 	}
 

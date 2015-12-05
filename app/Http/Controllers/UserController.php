@@ -151,98 +151,88 @@ class UserController extends Controller
 		
 		
 		//return result
-		$return_result = [
-			'type' => 'table list',
-			'form' => [
+		
+		//type
+		$return_result['type'] = 'table list';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'get',
+			'action' => url('user'),
+			'role' => 'form',
+			'data-type' => 'table list',
+			'data-title' => 'User',
+			'data-endpoint' => url('user'),
+			'data-method' => 'GET'
+		];
+		
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => 'page', 'value' => $page],
+			['name' => 'ord', 'value' => $order_by],
+			['name' => 'srt', 'value' => $sort_by],
+		];
+		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0][] = [
+			'label' => 'Nama Lengkap / Email', 
+			'element' => 'input',
+			'attr' => [
+				'type' => 'text', 
+				'name' => 'name_or_email',
+			]
+		];
+		
+		//block 2
+		$return_result['form']['elements'][0][1][] = [
+			'label' => 'Tanggal Daftar', 
+			'element' => 'datepicker_range',
+			'attr' => [
+				'name' => 'created_at',
+			]
+		];
+		
+		//block search
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
+				'element' => 'button',
 				'attr' => [
-					'method' => 'get',
-					'action' => url('user'),
-					'role' => 'form',
-					'data-type' => 'table list',
-					'data-title' => 'User',
-					'data-endpoint' => url('user'),
-					'data-method' => 'GET'
-				],
-			
-				'hidden' => [
-					['name' => 'page', 'value' => $page],
-					['name' => 'ord', 'value' => $order_by],
-					['name' => 'srt', 'value' => $sort_by],
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Nama Lengkap / Email', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'name_or_email',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Tanggal Daftar', 
-								'element' => 'datepicker_range',
-								'attr' => [
-									'name' => 'created_at',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-						]
-					],
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
 				]
 			],
-			'form_data' => [
-				'name_or_email' => $name_or_email,
-				'created_at' => [$created_at[0], $created_at[1]]
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
 			],
-			
-			'total_records' => $total_records,
-			'total_page' => $total_pages,
-			
-			'table_header' => $table_header,
-			
-			'table_data' => $table_data
 		];
+				
+		//form data
+		$return_result['form_data'] = [
+			'name_or_email' => $name_or_email,
+			'created_at' => [$created_at[0], $created_at[1]]
+		];
+			
+		$return_result['total_records'] = $total_records;
+		$return_result['total_page'] = $total_pages;
+		$return_result['table_header'] = $table_header;
+		$return_result['table_data'] = $table_data;
 		
 		//punya akses post, kasih button input user
 		//~ if(Auth::user()->hasMenu($this->menu_id, 'post'))
 		if(User::find($user_id)->hasMenu($this->menu_id, 'post'))
 		{
-			$return_result['form']['elements_blok'][3]['fields'][] = [
+			$return_result['form']['elements'][1][0][] = [
 				'label' => '<span class="glyphicon glyphicon-plus"></span> Tambah User', 
 				'element' => 'button',
 				'attr' => [
@@ -278,174 +268,150 @@ class UserController extends Controller
 			return response('forbidden', 403);
 		}
 		
-		$return_result = [
-			'type' => 'input form',
-			'form' => [
+		//type
+		$return_result['type'] = 'input form';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'post',
+			'action' => url('user'),
+			'role' => 'form'
+		];
+		
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => '_token', 'value' => csrf_token()],
+			['name' => '_redirect', 'value' => $redirect_url]
+		];
+		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0] = [
+			[
+				'label' => 'Alamat Email', 
+				'element' => 'input',
 				'attr' => [
-					'method' => 'post',
-					'action' => url('user'),
-					'role' => 'form'
-				],
-			
-				'hidden' => [
-					['name' => '_token', 'value' => csrf_token()],
-					['name' => '_redirect', 'value' => $redirect_url]
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Alamat Email', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'email',
-								]
-							],
-							[
-								'label' => 'Nama Lengkap', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'name',
-								]
-							],
-							[
-								'label' => 'Password', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'password', 
-									'name' => 'password',
-								]
-							],
-							[
-								'label' => 'Konfirmasi Password', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'password', 
-									'name' => 'cpassword',
-								]
-							],
-						]
-					],
-					
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-12',
-						'fields' => [
-							[
-								'label' => '<i class="glyphicon glyphicon-ok-circle"></i> Centang Semua Menu', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin:0px 5px 5px 0px',
-									'onclick' => 'checkAll(1)'
-								]
-							],
-							[
-								'label' => '<i class="glyphicon glyphicon-ok-circle"></i> Centang Semua View', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-success',
-									'style' => 'margin:0px 5px 5px 0px',
-									'onclick' => 'checkAllDefault()'
-								]
-							],
-							[
-								'label' => '<i class="glyphicon glyphicon-ban-circle"></i> Hapus Semua Centang', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-danger',
-									'style' => 'margin:0px 5px 5px 0px',
-									'onclick' => 'checkAll(0)'
-								]
-							],
-						]
-					],
-					
-					
-					[
-						'css_class' => 'col-lg-4',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-4',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-4',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Submit', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-success',
-									'style' => 'margin-right:5px',
-									'data-title' => 'User',
-									'data-endpoint' => $redirect_url,
-									'data-method' => 'GET'
-								]
-							]
-						]
-					],
+					'type' => 'text', 
+					'name' => 'email',
 				]
 			],
-			'form_data' => []
+			[
+				'label' => 'Nama Lengkap', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'name',
+				]
+			],
+			[
+				'label' => 'Password', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'password', 
+					'name' => 'password',
+				]
+			],
+			[
+				'label' => 'Konfirmasi Password', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'password', 
+					'name' => 'cpassword',
+				]
+			],
 		];
+		
+		//block 2 void
+		$return_result['form']['elements'][0][1] = array();
+		
+		//block 3
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => '<i class="glyphicon glyphicon-ok-circle"></i> Centang Semua Menu', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin:0px 5px 5px 0px',
+					'onclick' => 'checkAll(1)'
+				]
+			],
+			[
+				'label' => '<i class="glyphicon glyphicon-ok-circle"></i> Centang Semua View', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-success',
+					'style' => 'margin:0px 5px 5px 0px',
+					'onclick' => 'checkAllDefault()'
+				]
+			],
+			[
+				'label' => '<i class="glyphicon glyphicon-ban-circle"></i> Hapus Semua Centang', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-danger',
+					'style' => 'margin:0px 5px 5px 0px',
+					'onclick' => 'checkAll(0)'
+				]
+			],
+		];
+		
+		//block untuk menu privilege
+		$return_result['form']['elements'][2][0] = array();
+		$return_result['form']['elements'][2][1] = array();
+		$return_result['form']['elements'][2][2] = array();
+		
+		//block submit
+		$return_result['form']['elements'][3][0] = [
+			[
+				'label' => 'Submit', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-success',
+					'style' => 'margin-right:5px',
+					'data-title' => 'User',
+					'data-endpoint' => $redirect_url,
+					'data-method' => 'GET'
+				]
+			]
+		];
+		
+		//form data
+		$return_result['form_data'] = [];
 		
 		$menus = Menu::orderBy('parent_id')
 			->orderBy('rank')
 			->get();
 		
-		$pos = 2;
+		$pos = 0;
 		foreach($menus as $row)
 		{
 			if(!is_null($row->api_endpoint))
 			{
-				$pos ++;
-				if($pos > 5) {$pos = 3;}
-				
-				$return_result['form']['elements_blok'][$pos]['fields'][] = [
+				$return_result['form']['elements'][2][$pos][] = [
 					'label' => $row->title, 
 					'element' => 'checkbox',
 					'options' => [
@@ -475,6 +441,9 @@ class UserController extends Controller
 						],
 					]
 				];
+				
+				$pos ++;
+				if($pos > 2) {$pos = 0;}
 			}
 		}
 		
@@ -583,88 +552,92 @@ class UserController extends Controller
 			$user_id = $request->user()->id;
 			$user = User::find($user_id);
 			
-			$result = [
-				'type' => 'input form',
-				'form' => [
+			//type
+			$return_result['type'] = 'input form';
+			
+			//form attribute
+			$return_result['form']['attr'] = [
+				'method' => 'put',
+				'action' => url('user/profile'),
+				'role' => 'form'
+			];
+			
+			//form hidden elements
+			$return_result['form']['hidden'] = [
+				['name' => '_token', 'value' => csrf_token()],
+			];
+			
+			//form visible elements
+			$return_result['form']['elements'] = array();
+			
+			//block 1
+			$return_result['form']['elements'][0][0] = [
+				[
+					'label' => 'Alamat Email', 
+					'element' => 'input',
 					'attr' => [
-						'method' => 'put',
-						'action' => url('user/profile'),
-						'role' => 'form'
-					],
-				
-					'hidden' => [
-						['name' => '_token', 'value' => csrf_token()],
-					],
-					
-					'elements_blok' => [
-						[
-							'css_class' => 'col-lg-6',
-							'fields' => [
-								[
-									'label' => 'Alamat Email', 
-									'element' => 'input',
-									'attr' => [
-										'type' => 'text', 
-										'name' => 'email',
-										'value' => $user->email,
-										'readonly' => 'readonly'
-									]
-								],
-								[
-									'label' => 'Nama Lengkap', 
-									'element' => 'input',
-									'attr' => [
-										'type' => 'text', 
-										'name' => 'name',
-										'value' => $user->name
-									]
-								],
-								[
-									'label' => 'Password', 
-									'element' => 'input',
-									'attr' => [
-										'type' => 'password', 
-										'name' => 'password',
-										'placeholder' => 'Isi untuk mengganti password'
-									]
-								],
-								[
-									'label' => 'Konfirmasi Password', 
-									'element' => 'input',
-									'attr' => [
-										'type' => 'password', 
-										'name' => 'cpassword',
-										'placeholder' => 'Isi untuk mengganti password'
-									]
-								],
-								[
-									'label' => 'Submit', 
-									'element' => 'button',
-									'attr' => [
-										'type' => 'submit', 
-										'class' => 'btn btn-primary',
-										'style' => 'margin-right:5px'
-									]
-								],
-								[
-									'label' => 'Reset', 
-									'element' => 'button',
-									'attr' => [
-										'type' => 'reset', 
-										'class' => 'btn btn-warning'
-									]
-								]
-							]
-						]
+						'type' => 'text', 
+						'name' => 'email',
+						'value' => $user->email,
+						'readonly' => 'readonly'
 					]
 				],
-				'form_data' => [
-					'name' => $user->name,
-					'email' => $user->email
+				[
+					'label' => 'Nama Lengkap', 
+					'element' => 'input',
+					'attr' => [
+						'type' => 'text', 
+						'name' => 'name',
+						'value' => $user->name
+					]
+				],
+				[
+					'label' => 'Password', 
+					'element' => 'input',
+					'attr' => [
+						'type' => 'password', 
+						'name' => 'password',
+						'placeholder' => 'Isi untuk mengganti password'
+					]
+				],
+				[
+					'label' => 'Konfirmasi Password', 
+					'element' => 'input',
+					'attr' => [
+						'type' => 'password', 
+						'name' => 'cpassword',
+						'placeholder' => 'Isi untuk mengganti password'
+					]
+				],
+				[
+					'label' => 'Submit', 
+					'element' => 'button',
+					'attr' => [
+						'type' => 'submit', 
+						'class' => 'btn btn-primary',
+						'style' => 'margin-right:5px'
+					]
+				],
+				[
+					'label' => 'Reset', 
+					'element' => 'button',
+					'attr' => [
+						'type' => 'reset', 
+						'class' => 'btn btn-warning'
+					]
 				]
 			];
 			
-			return response($result, 200);
+			//block 2 void
+			$return_result['form']['elements'][0][1] = array();
+			
+			//form data
+			$return_result['form_data'] = [
+				'name' => $user->name,
+				'email' => $user->email
+			];
+			
+			return response($return_result, 200);
 		}
 		
 		return response('', 404);
@@ -696,8 +669,8 @@ class UserController extends Controller
 		$return_result['form']['attr']['method'] = 'put';
 		
 		//buang password
-		$tampung = array_pop($return_result['form']['elements_blok'][0]['fields']);
-		$tampung = array_pop($return_result['form']['elements_blok'][0]['fields']);
+		$tampung = array_pop($return_result['form']['elements'][0][0]);
+		$tampung = array_pop($return_result['form']['elements'][0][0]);
 		
 		//set form data
 		$return_result['form_data'] = [

@@ -248,281 +248,294 @@ var ContentLoader = function(box_element, title_element)
 		}
 		
 		//create elements block
-		if(typeof($form.elements_blok) != 'undefined' && $form.elements_blok.length > 0)
+		if(typeof($form.elements) != 'undefined' && $form.elements.length > 0)
 		{
-			$.each($form.elements_blok, function(i, itm){
-				//create div block
-				var div = document.createElement('div');
-				$(form).append(div);
-				
-				//set div class
-				$(div).addClass(itm.css_class);
-				
-				//render element
-				$.each(itm.fields, function(j, elm){
+			for(var $i=0; $i<$form.elements.length; $i++){
+				if($form.elements[$i].length <= 12){
+					var tampung = 12/$form.elements[$i].length;
+					var css_class = 'col-lg-'+tampung;
 					
-					//element
-					if(elm.element == 'button'){
-						var element = document.createElement(elm.element);
-						$(element).attr(elm.attr);
-						$(element).html(elm.label);
+					for(var $j=0; $j<$form.elements[$i].length; $j++){
+						var itm = $form.elements[$i][$j];
 						
-						//append data
-						$(div).append(element);
+						//create div block
+						var div = document.createElement('div');
+						$(form).append(div);
 						
-						//redirect endpoint
-						if(typeof(elm.redirect) == 'object'){
-							$(element).attr({
-								'data-redirect':elm.redirect.url + '?' + $.param(elm.redirect.param)
-							});
-						}
+						//set div class
+						$(div).addClass(css_class);
 						
-						//link button
-						if($(element).attr('data-endpoint')){
-							$(element).click(function(){
-								if($(this).attr('data-method').toLowerCase() == 'delete'){
-									cls.deleteData($(this).attr('data-endpoint'), $(this).attr('data-token'));
-								} else {
-									cls.load(
-										$(this).attr('data-endpoint'),
-										$(this).attr('data-title'),
-										{'redirect':$(this).attr('data-redirect')}
-									);
+						//render element
+						$.each(itm, function(j, elm){
+							
+							//element
+							if(elm.element == 'button'){
+								var element = document.createElement(elm.element);
+								$(element).attr(elm.attr);
+								$(element).html(elm.label);
+								
+								//append data
+								$(div).append(element);
+								
+								//redirect endpoint
+								if(typeof(elm.redirect) == 'object'){
+									$(element).attr({
+										'data-redirect':elm.redirect.url + '?' + $.param(elm.redirect.param)
+									});
 								}
 								
-								return false;
-							});
-						}
-					} else if(elm.element == 'inline-checkbox' || elm.element == 'checkbox'){
-						//create div element
-						var div2 = document.createElement('div');
-						$(div).append(div2);
-						$(div2).addClass('form-group');
-						
-						//create label
-						var label = document.createElement('label');
-						$(div2).append(label);
-						$(label).html(elm.label);
-						
-						//create element
-						if(elm.element == 'inline-checkbox'){
-							//create div element
-							var div3 = document.createElement('div');
-							$(div2).append(div3);
-							$(div3).addClass('checkbox');
-							
-							$.each(elm.options, function(m, chk){
-								//label
-								var label2 = document.createElement('label');
-								$(label2).addClass('checkbox-inline');
-								$(div3).append(label2);
-								
-								//checkbox
-								var element = document.createElement('input');
-								$(label2).append(element);
-								$(label2).append(chk.label);
-								$(element).attr({
-									"type":'checkbox',
-									"name":chk.name,
-									"value":chk.value,
-									"data-default":chk.default
-								});
-								
-								//oncheck
-								$(element).change(function(){
-									if($(this).attr('data-default') == 1 && !this.checked){
-										$(this).parent().siblings().find('input[type=checkbox]').removeAttr('checked');
-									} else if($(this).attr('data-default') == 0 && this.checked){
-										$(this).parent().siblings().find('input[type=checkbox][data-default=1]').attr('checked', true);
-									}
-								});
-							});
-						} else {
-							$.each(elm.options, function(m, chk){
+								//link button
+								if($(element).attr('data-endpoint')){
+									$(element).click(function(){
+										if($(this).attr('data-method').toLowerCase() == 'delete'){
+											cls.deleteData($(this).attr('data-endpoint'), $(this).attr('data-token'));
+										} else {
+											cls.load(
+												$(this).attr('data-endpoint'),
+												$(this).attr('data-title'),
+												{'redirect':$(this).attr('data-redirect')}
+											);
+										}
+										
+										return false;
+									});
+								}
+							} else if(elm.element == 'inline-checkbox' || elm.element == 'checkbox'){
 								//create div element
+								var div2 = document.createElement('div');
+								$(div).append(div2);
+								$(div2).addClass('form-group');
+								
+								//create label
+								var label = document.createElement('label');
+								$(div2).append(label);
+								$(label).html(elm.label);
+								
+								//create element
+								if(elm.element == 'inline-checkbox'){
+									//create div element
+									var div3 = document.createElement('div');
+									$(div2).append(div3);
+									$(div3).addClass('checkbox');
+									
+									$.each(elm.options, function(m, chk){
+										//label
+										var label2 = document.createElement('label');
+										$(label2).addClass('checkbox-inline');
+										$(div3).append(label2);
+										
+										//checkbox
+										var element = document.createElement('input');
+										$(label2).append(element);
+										$(label2).append(chk.label);
+										$(element).attr({
+											"type":'checkbox',
+											"name":chk.name,
+											"value":chk.value,
+											"data-default":chk.default
+										});
+										
+										//oncheck
+										$(element).change(function(){
+											if($(this).attr('data-default') == 1 && !this.checked){
+												$(this).parent().siblings().find('input[type=checkbox]').removeAttr('checked');
+											} else if($(this).attr('data-default') == 0 && this.checked){
+												$(this).parent().siblings().find('input[type=checkbox][data-default=1]').attr('checked', true);
+											}
+										});
+									});
+								} else {
+									$.each(elm.options, function(m, chk){
+										//create div element
+										var div3 = document.createElement('div');
+										$(div2).append(div3);
+										$(div3).addClass('checkbox');
+										
+										//label
+										var label2 = document.createElement('label');
+										$(div3).append(label2);
+										
+										//checkbox
+										var element = document.createElement('input');
+										$(label2).append(element);
+										$(label2).append(chk.label);
+										$(element).attr({
+											"type":'checkbox',
+											"name":chk.name,
+											"value":chk.value,
+											"data-default":chk.default
+										});
+										
+										//set value
+										if(typeof($form_data[chk.name]) != 'undefined' && Object.prototype.toString.call($form_data[chk.name]) ==='[object Array]'){
+											if($form_data[chk.name].indexOf(chk.value) >= 0){
+												element.checked = true;
+											}
+										}
+										
+										//oncheck
+										$(element).change(function(){
+											if($(this).attr('data-default') == 1 && !this.checked){
+												$(this).parent().parent().siblings().find('input[type=checkbox]').each(function(){
+													this.checked = false
+												});
+											} else if($(this).attr('data-default') == 0 && this.checked){
+												$(this).parent().parent().siblings().find('input[type=checkbox][data-default=1]').each(function(){
+													this.checked = true;
+												});
+											}
+										});
+									});
+								}
+							} else if(elm.element == 'datepicker_range'){
+								//create div element
+								var div2 = document.createElement('div');
+								$(div).append(div2);
+								$(div2).addClass('form-group');
+								
+								//create label
+								var label = document.createElement('label');
+								$(div2).append(label);
+								$(label).html(elm.label);
+								
+								//create div 
 								var div3 = document.createElement('div');
 								$(div2).append(div3);
-								$(div3).addClass('checkbox');
+								$(div3).addClass('input-daterange input-group');
 								
-								//label
-								var label2 = document.createElement('label');
-								$(div3).append(label2);
+								//start date
+								var element1 = document.createElement('input');
+								$(element1).addClass('input-sm form-control');
+								$(element1).attr({'name':elm.attr.name+'[]', 'type':'text'});
+								$(div3).append(element1);
 								
-								//checkbox
-								var element = document.createElement('input');
-								$(label2).append(element);
-								$(label2).append(chk.label);
-								$(element).attr({
-									"type":'checkbox',
-									"name":chk.name,
-									"value":chk.value,
-									"data-default":chk.default
+								//span to
+								var span = document.createElement('span');
+								$(span).addClass('input-group-addon');
+								$(span).html('s/d');
+								$(div3).append(span);
+								
+								//end date
+								var element2 = document.createElement('input');
+								$(element2).addClass('input-sm form-control');
+								$(element2).attr({'name':elm.attr.name+'[]', 'type':'text'});
+								$(div3).append(element2);
+								
+								//set datepicker
+								$(element1).datepicker({
+									format: "yyyy-mm-dd",
+									clearBtn: true,
+									language: "id",
+									autoclose: true
+								});
+								$(element2).datepicker({
+									format: "yyyy-mm-dd",
+									clearBtn: true,
+									language: "id",
+									autoclose: true
 								});
 								
-								//set value
-								if(typeof($form_data[chk.name]) != 'undefined' && Object.prototype.toString.call($form_data[chk.name]) ==='[object Array]'){
-									if($form_data[chk.name].indexOf(chk.value) >= 0){
-										element.checked = true;
+								//set element value
+								try{
+									if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name][0]) != 'undefined'){
+										$(element1).val($form_data[elm.attr.name][0]);
 									}
+									if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name][1]) != 'undefined'){
+										$(element2).val($form_data[elm.attr.name][1]);
+									}
+								} catch(err){
+									
+								}
+							} else if(elm.element == 'blank_div'){
+								var element = document.createElement('div');
+								$(element).attr(elm.attr);
+								
+								//append data
+								$(div).append(element);
+							} else {
+								//create div element
+								var div2 = document.createElement('div');
+								$(div).append(div2);
+								$(div2).addClass('form-group');
+								
+								//create label
+								var label = document.createElement('label');
+								$(div2).append(label);
+								$(label).html(elm.label);
+								
+								//create element
+								if(elm.element == 'select'){
+									var element = document.createElement('select');
+									
+									//index 0
+									var option = document.createElement('option');
+									$(option).attr('value', '');
+									$(option).html('');
+									$(element).append(option);
+									
+									if(Object.prototype.toString.call(elm.options) ==='[object Array]' && elm.options.length > 0){
+										$.each(elm.options, function(k, opt){
+											var option = document.createElement('option');
+											$(option).attr(opt.attr);
+											$(option).html(opt.html);
+											$(element).append(option);
+										});
+									} else if(Object.prototype.toString.call(elm.optgroup) ==='[object Array]' && elm.optgroup.length > 0){
+										$.each(elm.optgroup, function(k, optg){
+											var optgroup = document.createElement('optgroup');
+											$(optgroup).attr('label', optg.label);
+											$(element).append(optgroup);
+											
+											$.each(optg.options, function(l, opt){
+												var option = document.createElement('option');
+												
+												$(option).attr(opt.attr);
+												$(option).html(opt.html);
+												$(optgroup).append(option);
+											});
+										});
+									}
+									
+									
+								} else if(elm.element == 'textarea') {
+									var element = document.createElement('textarea');
+								} else {
+									var element = document.createElement('input');
+								}
+								$(element).addClass('form-control');
+								$(element).attr(elm.attr);
+								$(div2).append(element);
+								
+								//datepicker?
+								if(elm.element == 'datepicker'){
+									//set datepicker
+									$(element).datepicker({
+										format: "yyyy-mm-dd",
+										clearBtn: true,
+										language: "id",
+										autoclose: true
+									});
 								}
 								
-								//oncheck
-								$(element).change(function(){
-									if($(this).attr('data-default') == 1 && !this.checked){
-										$(this).parent().parent().siblings().find('input[type=checkbox]').each(function(){
-											this.checked = false
-										});
-									} else if($(this).attr('data-default') == 0 && this.checked){
-										$(this).parent().parent().siblings().find('input[type=checkbox][data-default=1]').each(function(){
-											this.checked = true;
-										});
-									}
-								});
-							});
-						}
-					} else if(elm.element == 'datepicker_range'){
-						//create div element
-						var div2 = document.createElement('div');
-						$(div).append(div2);
-						$(div2).addClass('form-group');
-						
-						//create label
-						var label = document.createElement('label');
-						$(div2).append(label);
-						$(label).html(elm.label);
-						
-						//create div 
-						var div3 = document.createElement('div');
-						$(div2).append(div3);
-						$(div3).addClass('input-daterange input-group');
-						
-						//start date
-						var element1 = document.createElement('input');
-						$(element1).addClass('input-sm form-control');
-						$(element1).attr({'name':elm.attr.name+'[]', 'type':'text'});
-						$(div3).append(element1);
-						
-						//span to
-						var span = document.createElement('span');
-						$(span).addClass('input-group-addon');
-						$(span).html('s/d');
-						$(div3).append(span);
-						
-						//end date
-						var element2 = document.createElement('input');
-						$(element2).addClass('input-sm form-control');
-						$(element2).attr({'name':elm.attr.name+'[]', 'type':'text'});
-						$(div3).append(element2);
-						
-						//set datepicker
-						$(element1).datepicker({
-							format: "yyyy-mm-dd",
-							clearBtn: true,
-							language: "id",
-							autoclose: true
+								//number format
+								if(elm.element == 'number_format'){
+									$(element).number( true, 0 );
+								}
+								
+								//set element value
+								if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name]) != 'undefined'){
+									$(element).val($form_data[elm.attr.name]);
+								}
+							}
 						});
-						$(element2).datepicker({
-							format: "yyyy-mm-dd",
-							clearBtn: true,
-							language: "id",
-							autoclose: true
-						});
-						
-						//set element value
-						try{
-							if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name][0]) != 'undefined'){
-								$(element1).val($form_data[elm.attr.name][0]);
-							}
-							if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name][1]) != 'undefined'){
-								$(element2).val($form_data[elm.attr.name][1]);
-							}
-						} catch(err){
-							
-						}
-					} else if(elm.element == 'blank_div'){
-						var element = document.createElement('div');
-						$(element).attr(elm.attr);
-						
-						//append data
-						$(div).append(element);
-					} else {
-						//create div element
-						var div2 = document.createElement('div');
-						$(div).append(div2);
-						$(div2).addClass('form-group');
-						
-						//create label
-						var label = document.createElement('label');
-						$(div2).append(label);
-						$(label).html(elm.label);
-						
-						//create element
-						if(elm.element == 'select'){
-							var element = document.createElement('select');
-							
-							//index 0
-							var option = document.createElement('option');
-							$(option).attr('value', '');
-							$(option).html('');
-							$(element).append(option);
-							
-							if(Object.prototype.toString.call(elm.options) ==='[object Array]' && elm.options.length > 0){
-								$.each(elm.options, function(k, opt){
-									var option = document.createElement('option');
-									$(option).attr(opt.attr);
-									$(option).html(opt.html);
-									$(element).append(option);
-								});
-							} else if(Object.prototype.toString.call(elm.optgroup) ==='[object Array]' && elm.optgroup.length > 0){
-								$.each(elm.optgroup, function(k, optg){
-									var optgroup = document.createElement('optgroup');
-									$(optgroup).attr('label', optg.label);
-									$(element).append(optgroup);
-									
-									$.each(optg.options, function(l, opt){
-										var option = document.createElement('option');
-										
-										$(option).attr(opt.attr);
-										$(option).html(opt.html);
-										$(optgroup).append(option);
-									});
-								});
-							}
-							
-							
-						} else if(elm.element == 'textarea') {
-							var element = document.createElement('textarea');
-						} else {
-							var element = document.createElement('input');
-						}
-						$(element).addClass('form-control');
-						$(element).attr(elm.attr);
-						$(div2).append(element);
-						
-						//datepicker?
-						if(elm.element == 'datepicker'){
-							//set datepicker
-							$(element).datepicker({
-								format: "yyyy-mm-dd",
-								clearBtn: true,
-								language: "id",
-								autoclose: true
-							});
-						}
-						
-						//number format
-						if(elm.element == 'number_format'){
-							$(element).number( true, 0 );
-						}
-						
-						//set element value
-						if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name]) != 'undefined'){
-							$(element).val($form_data[elm.attr.name]);
-						}
 					}
-				});
-				
-			});
+					
+					//clear float
+					var div = document.createElement('div');
+					$(div).addClass('clearfix visible-lg-block');
+					$(form).append(div);
+				}
+			}
 		}
 		
 		//set event form submit

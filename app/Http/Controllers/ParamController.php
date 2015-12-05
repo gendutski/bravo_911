@@ -58,81 +58,74 @@ class ParamController extends Controller
 		$menu_title = $menu->title;
 		$menu_name = $menu->name;
 		
-		$return_result = [
-			'type' => 'input form',
-			'form' => [
-				'attr' => [
-					'method' => 'post',
-					'action' => url('param?type='.$type),
-					'role' => 'form'
-				],
+		
+		$return_result['type'] = 'input form';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'post',
+			'action' => url('param?type='.$type),
+			'role' => 'form'
+		];
 			
-				'hidden' => [
-					['name' => '_token', 'value' => csrf_token()],
-					['name' => '_redirect', 'value' => $redirect_url]
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Nama', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'name',
-									'maxlength' => 100
-								]
-							],
-						]
-					],
-					
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Submit', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-success',
-									'style' => 'margin-right:5px',
-									'data-title' => $menu_title,
-									'data-endpoint' => $redirect_url,
-									'data-method' => 'GET'
-								]
-							]
-						]
-					],
-				]
-			],
-			'form_data' => []
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => '_token', 'value' => csrf_token()],
+			['name' => '_redirect', 'value' => $redirect_url]
 		];
 		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0][] = [
+			'label' => 'Nama', 
+			'element' => 'input',
+			'attr' => [
+				'type' => 'text', 
+				'name' => 'name',
+				'maxlength' => 100
+			]
+		];
+		
+		//block void
+		$return_result['form']['elements'][0][1] = array();	
+		
+		//block submit
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => 'Submit', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-success',
+					'style' => 'margin-right:5px',
+					'data-title' => $menu_title,
+					'data-endpoint' => $redirect_url,
+					'data-method' => 'GET'
+				]
+			]
+		];
+		
+		$return_result['form_data'] = [];
 		return response($return_result, 200);
 	}
 
@@ -317,84 +310,80 @@ class ParamController extends Controller
 		//get result end }
 		
 		//return result
-		$return_result = [
-			'type' => 'table list',
-			'form' => [
+		
+		//type
+		$return_result['type'] = 'table list';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'get',
+			'action' => url('/param/'.$id),
+			'role' => 'form',
+			'data-type' => 'table list',
+			'data-title' => $menu_title,
+			'data-endpoint' => url('/param/'.$id),
+			'data-method' => 'GET'
+		];
+		
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => 'page', 'value' => $page],
+			['name' => 'ord', 'value' => $order_by],
+			['name' => 'srt', 'value' => $sort_by],
+		];
+		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0][] = [
+			'label' => 'Nama', 
+			'element' => 'input',
+			'attr' => [
+				'type' => 'text', 
+				'name' => 'name',
+			]
+		];
+		
+		//void block
+		$return_result['form']['elements'][0][1] = array();
+		
+		//submit block
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
+				'element' => 'button',
 				'attr' => [
-					'method' => 'get',
-					'action' => url('/param/'.$id),
-					'role' => 'form',
-					'data-type' => 'table list',
-					'data-title' => $menu_title,
-					'data-endpoint' => url('/param/'.$id),
-					'data-method' => 'GET'
-				],
-			
-				'hidden' => [
-					['name' => 'page', 'value' => $page],
-					['name' => 'ord', 'value' => $order_by],
-					['name' => 'srt', 'value' => $sort_by],
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Nama', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'name',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-						]
-					],
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
 				]
 			],
-			'form_data' => [
-				'name' => $search['name'],
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
 			],
-			
-			'total_records' => $total_records,
-			'total_page' => $total_pages,
-			
-			'table_header' => $table_header,
-			
-			'table_data' => $table_data
 		];
+				
+		//form data
+		$return_result['form_data'] = [
+			'name' => $search['name'],
+		];
+			
+		$return_result['total_records'] = $total_records;
+		$return_result['total_page'] = $total_pages;
+		$return_result['table_header'] = $table_header;
+		$return_result['table_data'] = $table_data;
 		
 		//punya akses post, kasih button input user
 		if($request->user()->hasMenu($this->get_($this->menu_id, $id), 'post'))
 		{
-			$return_result['form']['elements_blok'][2]['fields'][] = [
+			$return_result['form']['elements'][1][0][] = [
 				'label' => '<span class="glyphicon glyphicon-plus"></span> Tambah '.$menu_name, 
 				'element' => 'button',
 				'attr' => [

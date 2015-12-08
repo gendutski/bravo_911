@@ -10,6 +10,11 @@ class PersonalData extends Model
     protected $table = 'personal_datas';
 	protected $primaryKey = 'id';
 	
+	
+	public function position()
+	{
+		return $this->belongsTo('App\Models\Param', 'posisi');
+	}
 		
 	public function scopeJoinAgama($query)
 	{
@@ -69,11 +74,11 @@ class PersonalData extends Model
 		
 		if(!empty($search['type']))
 		{
-			if($search['type'] == 'hr_project')
+			if($search['type'] == 'hr-project')
 			{
 				$query->where('tbl_posisi.type', '=', 'outsource-position');
 			}
-			elseif($search['type'] == 'hr_staf')
+			elseif($search['type'] == 'hr-staf')
 			{
 				$query->where('tbl_posisi.type', '=', 'staff-position');
 			}

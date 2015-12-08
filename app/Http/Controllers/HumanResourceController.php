@@ -9,32 +9,17 @@ use App\Http\Controllers\Controller;
 use App\Models\Menu;
 use App\Models\Param;
 use App\Models\PersonalData;
+use App\Models\PersonalFamily;
 use DB;
 
 class HumanResourceController extends Controller
 {
 	private $menu_id = array(
-		'hr_project' => 28,
-		'hr_staf' => 29,
+		'hr-project' => 28,
+		'hr-staf' => 29,
 	);
-	
-	
-	/**
-	 * Display a listing of the resource.
-	 *
-	 * @return Response
-	 */
-	public function index()
-	{
-		return response('not found', 404);
-	}
 
-	/**
-	 * Show the form for creating a new resource.
-	 *
-	 * @return Response
-	 */
-	public function create(Request $request)
+	public function getPersonal(Request $request)
 	{
 		//request
 		$type = $request->input('type');
@@ -56,112 +41,34 @@ class HumanResourceController extends Controller
 			->orderBy('name')
 			->get();
 		
-		$dropdown_religion = array();
-		$dropdown_position = array();
-		$dropdown_tribe = array();
-		$dropdown_location = array();
-		$dropdown_disease = array();
-		$dropdown_formal_education = array();
-		$dropdown_training = array();
-		$dropdown_language = array();
-		$dropdown_district = array();
-		$dropdown_status_of_residence = array();
+		$dropdown['religion'] = array();
+		$dropdown['position'] = array();
+		$dropdown['tribe'] = array();
+		$dropdown['location'] = array();
+		$dropdown['disease'] = array();
+		$dropdown['formal-education'] = array();
+		$dropdown['training'] = array();
+		$dropdown['language'] = array();
+		$dropdown['district'] = array();
+		$dropdown['status-of-residence'] = array();
 		
 		foreach($params	as $row)
 		{
-			if($row->type == 'religion')
+			if(
+				($row->type == 'outsource-position' && $type == 'hr-project') ||
+				($row->type == 'staff-position' && $type == 'hr-staf')
+			)
 			{
-				$dropdown_religion[] = array(
+				$dropdown['position'][] = array(
 					'attr' => [
 						'value' => $row->id
 					],
 					'html' => $row->name
 				);
 			}
-			elseif($row->type == 'tribe')
+			elseif(array_key_exists($row->type, $dropdown))
 			{
-				$dropdown_tribe[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'location')
-			{
-				$dropdown_location[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'disease')
-			{
-				$dropdown_disease[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'formal-education')
-			{
-				$dropdown_formal_education[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'training')
-			{
-				$dropdown_training[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'language')
-			{
-				$dropdown_language[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'district')
-			{
-				$dropdown_district[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'status-of-residence')
-			{
-				$dropdown_status_of_residence[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'outsource-position' && $id == 'hr_project')
-			{
-				$dropdown_position[] = array(
-					'attr' => [
-						'value' => $row->id
-					],
-					'html' => $row->name
-				);
-			}
-			elseif($row->type == 'staff-position' && $id == 'hr_staf')
-			{
-				$dropdown_position[] = array(
+				$dropdown[$row->type][] = array(
 					'attr' => [
 						'value' => $row->id
 					],
@@ -170,319 +77,847 @@ class HumanResourceController extends Controller
 			}
 		}
 		
-		$return_result = [
-			'type' => 'input form',
-			'form' => [
+		//type
+		$return_result['type'] = 'input form';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'post',
+			'action' => url('human_resource/personal?type='.$type),
+			'role' => 'form'
+		];
+			
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => '_token', 'value' => csrf_token()],
+			['name' => '_redirect', 'value' => $redirect_url]
+		];
+		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0][] = [
+			'label' => 'Posisi Yang Dilamar', 
+			'element' => 'select',
+			'attr' => [
+				'name' => 'posisi',
+			],
+			'options' => $dropdown['position']
+		];
+		
+		//block 2 void
+		$return_result['form']['elements'][0][1] = array();
+		
+		//block 3 sub header
+		$return_result['form']['elements'][1][0][] = [
+			'label' => 'DATA PRIBADI', 
+			'element' => 'header',
+		];
+		
+		//block 4
+		$return_result['form']['elements'][2][0] = [
+			[
+				'label' => 'Nama Lengkap', 
+				'element' => 'input',
 				'attr' => [
-					'method' => 'post',
-					'action' => url('human_resource?type='.$type),
-					'role' => 'form'
+					'type' => 'text', 
+					'name' => 'nama_lengkap',
+					'maxlength' => 255
+				]
+			],
+			[
+				'label' => 'Asal KTP', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'asal_ktp',
 				],
-				
-				'hidden' => [
-					['name' => '_token', 'value' => csrf_token()],
-					['name' => '_redirect', 'value' => $redirect_url]
+				'options' => $dropdown['location']
+			],
+			[
+				'label' => 'No KTP', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'no_ktp',
+					'maxlength' => 100
+				]
+			],
+			[
+				'label' => 'Alamat di KTP', 
+				'element' => 'textarea',
+				'attr' => [
+					'name' => 'alamat_ktp',
+				]
+			],
+			[
+				'label' => 'Masa Berlaku KTP', 
+				'element' => 'datepicker',
+				'attr' => [
+					'name' => 'masa_berlaku_ktp',
+				]
+			],
+			[
+				'label' => 'No-Jamsostek', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'no_jamsostek',
+					'maxlength' => 100
+				]
+			],
+			[
+				'label' => 'No-NPWP', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'no_npwp',
+					'maxlength' => 100
+				]
+			],
+			[
+				'label' => 'No-ID KTA Security', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'no_id_kta_security',
+					'maxlength' => 100
+				]
+			],
+			[
+				'label' => 'No-Reg KTA Security', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'no_reg_kta_security',
+					'maxlength' => 100
+				]
+			],
+			[
+				'label' => 'Suku Bangsa', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'suku_bangsa',
 				],
-				
-				'elements_blok' => [
-					//kolom 1
+				'options' => $dropdown['tribe']
+			],
+			[
+				'label' => 'Alamat Email', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'email',
+					'maxlength' => 255
+				]
+			],
+			[
+				'label' => 'Status Perkawinan', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'status_menikah',
+				],
+				'options' => [
 					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Posisi Yang Dilamar', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'uraian_rekening',
-									'maxlength' => 255
-								]
-							],
-							[
-								'label' => 'Nama Lengkap', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'nama_lengkap',
-									'maxlength' => 255
-								]
-							],
-							[
-								'label' => 'Asal KTP', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'asal_ktp',
-								],
-								'options' => $dropdown_location
-							],
-							[
-								'label' => 'No KTP', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'no_ktp',
-									'maxlength' => 100
-								]
-							],
-							[
-								'label' => 'Alamat di KTP', 
-								'element' => 'textarea',
-								'attr' => [
-									'name' => 'alamat_ktp',
-								]
-							],
-							[
-								'label' => 'Masa Berlaku KTP', 
-								'element' => 'datepicker',
-								'attr' => [
-									'name' => 'masa_berlaku_ktp',
-								]
-							],
-							[
-								'label' => 'No-Jamsostek', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'no_jamsostek',
-									'maxlength' => 100
-								]
-							],
-							[
-								'label' => 'No-NPWP', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'no_npwp',
-									'maxlength' => 100
-								]
-							],
-							[
-								'label' => 'No-ID KTA Security', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'no_id_kta_security',
-									'maxlength' => 100
-								]
-							],
-							[
-								'label' => 'No-Reg KTA Security', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'no_reg_kta_security',
-									'maxlength' => 100
-								]
-							],
-							[
-								'label' => 'Suku Bangsa', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'suku_bangsa',
-								],
-								'options' => $dropdown_tribe
-							],
-							[
-								'label' => 'Alamat Email', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'email',
-									'maxlength' => 255
-								]
-							],
-							[
-								'label' => 'Status Perkawinan', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'status_menikah',
-								],
-								'options' => [
-									[
-										'attr' => ['value' => 0],
-										'html' => 'Belum Menikah'
-									],
-									[
-										'attr' => ['value' => 1],
-										'html' => 'Menikah'
-									],
-								]
-							],
-						]
+						'attr' => ['value' => 'tidak'],
+						'html' => 'Belum Menikah'
 					],
-					
-					//kolom 2
 					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Tempat Lahir', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'tempat_lahir',
-								],
-								'options' => $dropdown_location
-							],
-							[
-								'label' => 'Tanggal Lahir', 
-								'element' => 'datepicker',
-								'attr' => [
-									'name' => 'tgl_lahir',
-								]
-							],
-							[
-								'label' => 'Jenis Kelamin', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'jenis_kelamin',
-								],
-								'options' => [
-									[
-										'attr' => ['value' => 'pria'],
-										'html' => 'Pria'
-									],
-									[
-										'attr' => ['value' => 'wanita'],
-										'html' => 'Wanita'
-									],
-								]
-							],
-							[
-								'label' => 'Agama', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'agama',
-								],
-								'options' => $dropdown_religion
-							],
-							[
-								'label' => 'Tinggi Badan', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'tinggi_badan',
-									'placeholder' => 'Dalam cm'
-								]
-							],
-							[
-								'label' => 'Berat Badan', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'berat_badan',
-									'placeholder' => 'Dalam Kg'
-								]
-							],
-							[
-								'label' => 'Alamat Tinggal Sekarang', 
-								'element' => 'textarea',
-								'attr' => [
-									'name' => 'alamat_tinggal_sekarang',
-								]
-							],
-							[
-								'label' => 'Kota / Kabupaten', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'kabupaten',
-								],
-								'options' => $dropdown_district
-							],
-							[
-								'label' => 'Status Tmpt Tinggal', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'status_tempat_tinggal',
-								],
-								'options' => $dropdown_status_of_residence
-							],
-							[
-								'label' => 'No-Call Rumah', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text',
-									'name' => 'no_call_rumah',
-									'maxlength' => 30
-								],
-							],
-							[
-								'label' => 'No-Contak Person', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text',
-									'name' => 'no_contact_person',
-									'maxlength' => 30
-								],
-							],
-						]
-					],
-					
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Submit', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'button', 
-									'class' => 'btn btn-success',
-									'style' => 'margin-right:5px',
-									'data-title' => $menu_title,
-									'data-endpoint' => $redirect_url,
-									'data-method' => 'GET'
-								]
-							]
-						]
+						'attr' => ['value' => 'ya'],
+						'html' => 'Menikah'
 					],
 				]
 			],
-			'form_data' => []
+		];
+		
+		//block 5
+		$return_result['form']['elements'][2][1] = [
+			[
+				'label' => 'Tempat Lahir', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'tempat_lahir',
+				],
+				'options' => $dropdown['location']
+			],
+			[
+				'label' => 'Tanggal Lahir', 
+				'element' => 'datepicker',
+				'attr' => [
+					'name' => 'tgl_lahir',
+				]
+			],
+			[
+				'label' => 'Jenis Kelamin', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'jenis_kelamin',
+				],
+				'options' => [
+					[
+						'attr' => ['value' => 'pria'],
+						'html' => 'Pria'
+					],
+					[
+						'attr' => ['value' => 'wanita'],
+						'html' => 'Wanita'
+					],
+				]
+			],
+			[
+				'label' => 'Agama', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'agama',
+				],
+				'options' => $dropdown['religion']
+			],
+			[
+				'label' => 'Tinggi Badan', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'tinggi_badan',
+					'placeholder' => 'Dalam cm'
+				]
+			],
+			[
+				'label' => 'Berat Badan', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text', 
+					'name' => 'berat_badan',
+					'placeholder' => 'Dalam Kg'
+				]
+			],
+			[
+				'label' => 'Alamat Tinggal Sekarang', 
+				'element' => 'textarea',
+				'attr' => [
+					'name' => 'alamat_tinggal_sekarang',
+				]
+			],
+			[
+				'label' => 'Kota / Kabupaten', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'kabupaten',
+				],
+				'options' => $dropdown['district']
+			],
+			[
+				'label' => 'Status Tmpt Tinggal', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'status_tempat_tinggal',
+				],
+				'options' => $dropdown['status-of-residence']
+			],
+			[
+				'label' => 'No-Call Rumah', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'no_call_rumah',
+					'maxlength' => 30
+				],
+			],
+			[
+				'label' => 'No-Contak Person', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'no_contact_person',
+					'maxlength' => 30
+				],
+			],
+		];
+		
+		//block 6 sub header
+		$return_result['form']['elements'][3][0][] = [
+			'label' => 'DATA KELUARGA', 
+			'element' => 'header',
+		];
+		
+		
+		//block 7 suami istri
+		$return_result['form']['elements'][4][0] = [
+			[
+				'label' => 'Nama Suami/Istri', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'nama_pasangan',
+					'maxlength' => 255
+				],
+			],
+			[
+				'label' => 'Tempat Lahir', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'tempat_lahir_pasangan',
+				],
+				'options' => $dropdown['location']
+			],
+			[
+				'label' => 'Tanggal Lahir', 
+				'element' => 'datepicker',
+				'attr' => [
+					'name' => 'tgl_lahir_pasangan',
+				]
+			],
+			[
+				'label' => 'Pekerjaan Suami/Istri', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'pekerjaan_pasangan',
+					'maxlength' => 255
+				],
+			],
+			[
+				'label' => 'Apakah Suami/Istri Menjadi Tanggung Jawab Anda?', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'tanggungan_pasangan',
+				],
+				'options' => [
+					[
+						'attr' => ['value' => 'ya'],
+						'html' => 'Ya'
+					],
+					[
+						'attr' => ['value' => 'tidak'],
+						'html' => 'Tidak'
+					],
+				]
+			],
+		];
+		
+		//block 8 alamat suami istri
+		$return_result['form']['elements'][4][1][] = [
+			'label' => 'Alamat Suami/Istri', 
+			'element' => 'textarea',
+			'attr' => [
+				'name' => 'alamat_pasangan',
+				'rows' => 8
+			]
+		];
+		
+		
+		//block 9 anak
+		for($i = 0; $i < 3; $i++)
+		{
+			$return_result['form']['elements'][5][0][] = [
+				'label' => 'Nama Anak #'.($i+1), 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'nama_anak[]',
+					'maxlength' => 255
+				],
+			];
+			
+			$return_result['form']['elements'][5][1][] = [
+				'label' => 'Tempat Lahir', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'tempat_lahir_anak[]',
+				],
+				'options' => $dropdown['location']
+			];
+			
+			$return_result['form']['elements'][5][2][] = [
+				'label' => 'Tanggal Lahir', 
+				'element' => 'datepicker',
+				'attr' => [
+					'name' => 'tgl_lahir_anak[]',
+				]
+			];
+		}
+		
+		//block 10 line
+		$return_result['form']['elements'][6][0][] = [
+			'label' => '&nbsp;', 
+			'element' => 'header',
+		];
+		
+		//block 11 ayah, ibu, saudara
+		$arr_saudara = ['Ayah', 'Ibu', 'Kakak/Adik', 'Kakak/Adik'];
+		$arr_elm_saudara = ['ayah', 'ibu', 'saudara', 'saudara'];
+		for($i = 0; $i < 4; $i++)
+		{
+			$return_result['form']['elements'][7][0][] = [
+				'label' => 'Nama '.$arr_saudara[$i], 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'nama_'.$arr_elm_saudara[$i].'[]',
+					'maxlength' => 255
+				],
+			];
+			
+			$return_result['form']['elements'][7][1][] = [
+				'label' => 'Pekerjaan', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'pekerjaan_'.$arr_elm_saudara[$i].'[]',
+					'maxlength' => 255
+				],
+			];
+			
+			$return_result['form']['elements'][7][2][] = [
+				'label' => 'Alamat', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'alamat_'.$arr_elm_saudara[$i].'[]',
+				],
+			];
+		}
+		
+		//block 12
+		$return_result['form']['elements'][8][0][] = [
+			'label' => 'Anak Ke', 
+			'element' => 'input',
+			'attr' => [
+				'type' => 'text',
+				'name' => 'anak_ke',
+			],
+		];
+		
+		//block 13
+		$return_result['form']['elements'][8][1][] = [
+			'label' => 'Jumlah Saudara', 
+			'element' => 'input',
+			'attr' => [
+				'type' => 'text',
+				'name' => 'jumlah_saudara',
+			],
+		];
+		
+		//block 14 darurat
+		$return_result['form']['elements'][9][0][] = [
+			'label' => 'Yang Harus di Hubungi dalam Keadaan Darurat (Tidak Serumah)', 
+			'element' => 'header',
+		];
+		
+		//block 15
+		$return_result['form']['elements'][10][0] = [
+			[
+				'label' => 'Nama', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'nama_darurat',
+					'maxlength' => 255
+				],
+			],
+			[
+				'label' => 'Hubungan', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'hubungan_darurat',
+					'maxlength' => 255
+				],
+			],
+			[
+				'label' => 'Pekerjaan', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'pekerjaan_darurat',
+					'maxlength' => 255
+				],
+			],
+			[
+				'label' => 'Alamat', 
+				'element' => 'textarea',
+				'attr' => [
+					'name' => 'alamat_darurat',
+				],
+			],
+			[
+				'label' => 'No-Tlp.Rumah Darurat', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'telp_darurat',
+					'maxlength' => 20
+				],
+			],
+			[
+				'label' => 'No.Ponsel/Darurat', 
+				'element' => 'input',
+				'attr' => [
+					'type' => 'text',
+					'name' => 'ponsel_darurat',
+					'maxlength' => 20
+				],
+			],
+
+		];
+		
+		
+		//submit
+		$return_result['form']['elements'][11][0] = [
+			[
+				'label' => 'Submit', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => '<i class="glyphicon glyphicon-circle-arrow-left"></i> Back', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'button', 
+					'class' => 'btn btn-success',
+					'style' => 'margin-right:5px',
+					'data-title' => $menu_title,
+					'data-endpoint' => $redirect_url,
+					'data-method' => 'GET'
+				]
+			]
+		];
+		
+		$return_result['form_data'] = [];
+		return response($return_result, 200);
+	}
+
+	public function getEditPersonal(Request $request, $type, $id)
+	{
+		//request
+		$redirect_url = $request->input('redirect');
+		
+		if(!$request->user()->hasMenu($this->get_($this->menu_id, $type), 'put'))
+		{
+			return response('Forbidden', 403);
+		}
+		
+		$pd = PersonalData::findOrFail($id);
+		$check_position = $pd->position->type;
+		if(
+			($type == 'hr-project' && $check_position != 'outsource-position') ||
+			($type == 'hr-staf' && $check_position != 'staff-position') 
+		){ return response('not found', 404); }
+		
+		$return_result = $this->getPersonal($request)->original;
+		var_dump($return_result);exit;
+		
+		//set action
+		$return_result['form']['attr']['action'] = url('human_resource/personal/'.$id.'?type='.$type);
+		
+		//set method
+		$return_result['form']['attr']['method'] = 'put';
+		
+		$return_result['form_data'] = [
+			'posisi' => $pd->posisi,
+			'nama_lengkap' => $pd->nama_lengkap,
+			'asal_ktp' => $pd->asal_ktp,
+			'no_ktp' => $pd->no_ktp,
+			'alamat_ktp' => $pd->alamat_ktp,
+			'masa_berlaku_ktp' => $pd->masa_berlaku_ktp,
+			'no_jamsostek' => $pd->no_jamsostek,
+			'no_npwp' => $pd->no_npwp,
+			'no_id_kta_security' => $pd->no_id_kta_security,
+			'no_reg_kta_security' => $pd->no_reg_kta_security,
+			'suku_bangsa' => $pd->suku_bangsa,
+			'email' => $pd->email,
+			'status_menikah' => $pd->status_menikah? 'ya':'tidak',
+			'tempat_lahir' => $pd->tempat_lahir,
+			'tgl_lahir' => $pd->tgl_lahir,
+			'jenis_kelamin' => $pd->jenis_kelamin,
+			'agama' => $pd->agama,
+			'tinggi_badan' => $pd->tinggi_badan,
+			'berat_badan' => $pd->berat_badan,
+			'alamat_tinggal_sekarang' => $pd->alamat_tinggal_sekarang,
+			'kabupaten' => $pd->kabupaten,
+			'status_tempat_tinggal' => $pd->status_tempat_tinggal,
+			'no_call_rumah' => $pd->no_call_rumah,
+			'no_contact_person' => $pd->no_contact_person,
+			'tanggungan_pasangan' => $pd->tanggungan_pasangan? 'ya':'tidak',
+			'nama_darurat' => $pd->nama_darurat,
+			'hubungan_darurat' => $pd->hubungan_darurat,
+			'pekerjaan_darurat' => $pd->pekerjaan_darurat,
+			'alamat_darurat' => $pd->alamat_darurat,
+			'telp_darurat' => $pd->telp_darurat,
+			'ponsel_darurat' => $pd->ponsel_darurat,
 		];
 		
 		return response($return_result, 200);
 	}
-
-	/**
-	 * Store a newly created resource in storage.
-	 *
-	 * @param  Request  $request
-	 * @return Response
-	 */
-	public function store(Request $request)
+	
+	public function postPersonal(Request $request)
 	{
-		//
+		//request
+		$type = $request->input('type');
+		$redirect_url = $request->input('redirect');
+		
+		//check privilege
+		if(!$request->user()->hasMenu($this->get_($this->menu_id, $type), 'post'))
+		{
+			return response('Forbidden', 403);
+		}
+		
+		//validate
+		$this->validate(
+			$request, 
+			[
+				'posisi' => 'required',
+				'nama_lengkap' => 'required|max:255',
+				'asal_ktp' => 'required',
+				'no_ktp' => 'required|max:100',
+				'alamat_ktp' => 'required',
+				'masa_berlaku_ktp' => 'required',
+				'suku_bangsa' => 'required',
+				'email' => 'required|max:255|unique:personal_datas,email',
+				'status_menikah' => 'required',
+				'tempat_lahir' => 'required',
+				'tgl_lahir' => 'required',
+				'jenis_kelamin' => 'required',
+				'agama' => 'required',
+				'tinggi_badan' => 'required|numeric',
+				'berat_badan' => 'required|numeric',
+				'alamat_tinggal_sekarang' => 'required',
+				'kabupaten' => 'required',
+				'status_tempat_tinggal' => 'required',
+				'telp_darurat' => 'required',
+				'ponsel_darurat' => 'required',
+				
+				'nama_pasangan' => 'required_if:status_menikah,ya',
+				'tempat_lahir_pasangan' => 'required_if:status_menikah,ya',
+				'tgl_lahir_pasangan' => 'required_if:status_menikah,ya',
+				'pekerjaan_pasangan' => 'required_if:status_menikah,ya',
+				'tanggungan_pasangan' => 'required_if:status_menikah,ya',
+				'alamat_pasangan' => 'required_if:status_menikah,ya',
+				
+				'anak_ke' => 'numeric',
+				'jumlah_saudara' => 'numeric',
+			],
+			[
+				'posisi.required' => '<span style="font-weight:bold;font-style:italic">Posisi</span> harap di isi',
+				'nama_lengkap.required' => '<span style="font-weight:bold;font-style:italic">Nama Lengkap</span> harap di isi',
+				'asal_ktp.required' => '<span style="font-weight:bold;font-style:italic">Asal KTP</span> harap di isi',
+				'no_ktp.required' => '<span style="font-weight:bold;font-style:italic">No KTP</span> harap di isi',
+				'alamat_ktp.required' => '<span style="font-weight:bold;font-style:italic">Alamat di KTP</span> harap di isi',
+				'masa_berlaku_ktp.required' => '<span style="font-weight:bold;font-style:italic">Masa Berlaku KTP</span> harap di isi',
+				'suku_bangsa.required' => '<span style="font-weight:bold;font-style:italic">Suku Bangsa</span> harap di isi',
+				'email.required' => '<span style="font-weight:bold;font-style:italic">Alamat Email</span> harap di isi',
+				'email.unique' => '<span style="font-weight:bold;font-style:italic">'.$request->input('email').'</span> sudah terdaftar. Harap pilih alamat email yang lain!',
+				'status_menikah.required' => '<span style="font-weight:bold;font-style:italic">Status Perkawinan</span> harap di isi',
+				'tempat_lahir.required' => '<span style="font-weight:bold;font-style:italic">Tempat Lahir</span> harap di isi',
+				'tgl_lahir.required' => '<span style="font-weight:bold;font-style:italic">Tanggal Lahir</span> harap di isi',
+				'jenis_kelamin.required' => '<span style="font-weight:bold;font-style:italic">Jenis Kelamin</span> harap di isi',
+				'agama.required' => '<span style="font-weight:bold;font-style:italic">Agama</span> harap di isi',
+				'tinggi_badan.required' => '<span style="font-weight:bold;font-style:italic">Tinggi Badan</span> harap di isi',
+				'tinggi_badan.numeric' => '<span style="font-weight:bold;font-style:italic">Tinggi Badan</span> harap di isi angka',
+				'berat_badan.required' => '<span style="font-weight:bold;font-style:italic">Berat Badan</span> harap di isi',
+				'berat_badan.numeric' => '<span style="font-weight:bold;font-style:italic">Berat Badan</span> harap di isi angka',
+				'alamat_tinggal_sekarang.required' => '<span style="font-weight:bold;font-style:italic">Alamat Tinggal Sekarang</span> harap di isi',
+				'kabupaten.required' => '<span style="font-weight:bold;font-style:italic">Kota / Kabupaten</span> harap di isi',
+				'status_tempat_tinggal.required' => '<span style="font-weight:bold;font-style:italic">Status Tmpt Tinggal</span> harap di isi',
+				'telp_darurat.required' => '<span style="font-weight:bold;font-style:italic">No-Tlp.Rumah Darurat</span> harap di isi',
+				'ponsel_darurat.required' => '<span style="font-weight:bold;font-style:italic">No.Ponsel/Darurat</span> harap di isi',
+				
+				'nama_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Nama Suami/Istri</span> harap di isi',
+				'tempat_lahir_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Tempat Lahir Suami/Istri</span> harap di isi',
+				'tgl_lahir_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Tanggal Lahir Suami/Istri</span> harap di isi',
+				'pekerjaan_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Pekerjaan Suami/Istri</span> harap di isi',
+				'tanggungan_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Apakah Suami/Istri Menjadi Tanggung Jawab Anda?</span> harap di isi',
+				'alamat_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Alamat Suami/Istri</span> harap di isi',
+				
+			]
+		);
+		
+		//menu title
+		$menu = Menu::findOrFail($this->get_($this->menu_id, $type));
+		$menu_title = $menu->title;
+		
+		//hitung anak
+		$arr_anak = array();
+		$nama_anak = $request->input('nama_anak');
+		$tempat_lahir_anak = $request->input('tempat_lahir_anak');
+		$tgl_lahir_anak = $request->input('tgl_lahir_anak');
+		for($i = 0; $i < count($request->input('nama_anak')); $i++)
+		{
+			if(!empty($nama_anak[$i]) && !empty($tempat_lahir_anak[$i]) && !empty($tgl_lahir_anak[$i]))
+			{
+				$arr_anak[] = [$nama_anak[$i], $tempat_lahir_anak[$i], $tgl_lahir_anak[$i]];
+			}
+		}
+		
+		//save personal
+		$pd = new PersonalData;
+		$pd->nama_lengkap = $request->input('nama_lengkap');
+		$pd->posisi = $request->input('posisi');
+		$pd->asal_ktp = $request->input('asal_ktp');
+		$pd->no_ktp = $request->input('no_ktp');
+		$pd->alamat_ktp = $request->input('alamat_ktp');
+		$pd->masa_berlaku_ktp = $request->input('masa_berlaku_ktp');
+		$pd->no_jamsostek = $request->input('no_jamsostek', null);
+		$pd->no_npwp = $request->input('no_npwp', null);
+		$pd->no_id_kta_security = $request->input('no_id_kta_security', null);
+		$pd->no_reg_kta_security = $request->input('no_reg_kta_security', null);
+		$pd->suku_bangsa = $request->input('suku_bangsa');
+		$pd->email = $request->input('email');
+		$pd->status_menikah = $request->input('status_menikah') == 'ya'? true:false;
+		$pd->tempat_lahir = $request->input('tempat_lahir');
+		$pd->tgl_lahir = $request->input('tgl_lahir');
+		$pd->jenis_kelamin = $request->input('jenis_kelamin');
+		$pd->agama = $request->input('agama');
+		$pd->tinggi_badan = $request->input('tinggi_badan');
+		$pd->berat_badan = $request->input('berat_badan');
+		$pd->alamat_tinggal_sekarang = $request->input('alamat_tinggal_sekarang');
+		$pd->kabupaten = $request->input('kabupaten');
+		$pd->status_tempat_tinggal = $request->input('status_tempat_tinggal');
+		$pd->no_call_rumah = $request->input('no_call_rumah');
+		$pd->no_contact_person = $request->input('no_contact_person');
+		$pd->tanggungan_pasangan = $request->input('tanggungan_pasangan') == 'ya'? true:false;
+		$pd->nama_darurat = $request->input('nama_darurat');
+		$pd->jumlah_anak = count($arr_anak);
+		$pd->anak_ke = $request->input('anak_ke');
+		$pd->jumlah_saudara = $request->input('jumlah_saudara');
+		$pd->nama_darurat = $request->input('nama_darurat', null);
+		$pd->hubungan_darurat = $request->input('hubungan_darurat', null);
+		$pd->pekerjaan_darurat = $request->input('pekerjaan_darurat', null);
+		$pd->alamat_darurat = $request->input('alamat_darurat', null);
+		$pd->telp_darurat = $request->input('telp_darurat');
+		$pd->ponsel_darurat = $request->input('ponsel_darurat');
+		
+		$pd->created_by = $request->user()->id;
+		$pd->updated_by = $request->user()->id;
+		if($pd->save())
+		{
+			
+			//keluarga 1
+			if($pd->status_menikah)
+			{
+				//save istri
+				$pf = new PersonalFamily;
+				$pf->personal_id = $pd->id;
+				$pf->tipe = 'suami-istri';
+				$pf->nama = $request->input('nama_pasangan');
+				$pf->tempat_lahir = $request->input('tempat_lahir_pasangan');
+				$pf->tgl_lahir = $request->input('tgl_lahir_pasangan');
+				$pf->alamat = $request->input('alamat_pasangan');
+				$pf->pekerjaan = $request->input('pekerjaan_pasangan');
+				
+				$pf->created_by = $request->user()->id;
+				$pf->updated_by = $request->user()->id;
+				$pf->save();
+				
+				//save anak
+				if(!empty($arr_anak))
+				{
+					foreach($arr_anak as $anak)
+					{
+						$pf = new PersonalFamily;
+						$pf->personal_id = $pd->id;
+						$pf->tipe = 'anak';
+						$pf->nama = $anak[0];
+						$pf->tempat_lahir = $anak[1];
+						$pf->tgl_lahir = $anak[2];
+						
+						$pf->created_by = $request->user()->id;
+						$pf->updated_by = $request->user()->id;
+						$pf->save();
+					}
+				}
+			}
+			
+			//ayah
+			$nama_ayah = $request->input('nama_ayah');
+			if(!empty($nama_ayah) && is_array($nama_ayah))
+			{
+				$alamat_ayah = $request->input('alamat_ayah');
+				$pekerjaan_ayah = $request->input('pekerjaan_ayah');
+				
+				$pf = new PersonalFamily;
+				$pf->personal_id = $pd->id;
+				$pf->tipe = 'ayah';
+				$pf->nama = $nama_ayah[0];
+				$pf->alamat = (!empty($alamat_ayah) && is_array($alamat_ayah))? $alamat_ayah[0]:null;
+				$pf->pekerjaan = (!empty($pekerjaan_ayah) && is_array($pekerjaan_ayah))? $pekerjaan_ayah[0]:null;
+				$pf->created_by = $request->user()->id;
+				$pf->updated_by = $request->user()->id;
+				$pf->save();
+			}
+			
+			//ibu
+			$nama_ibu = $request->input('nama_ibu');
+			if(!empty($nama_ibu) && is_array($nama_ibu))
+			{
+				$alamat_ibu = $request->input('alamat_ibu');
+				$pekerjaan_ibu = $request->input('pekerjaan_ibu');
+				
+				$pf = new PersonalFamily;
+				$pf->personal_id = $pd->id;
+				$pf->tipe = 'ibu';
+				$pf->nama = $nama_ibu[0];
+				$pf->alamat = (!empty($alamat_ibu) && is_array($alamat_ibu))? $alamat_ibu[0]:null;
+				$pf->pekerjaan = (!empty($pekerjaan_ibu) && is_array($pekerjaan_ibu))? $pekerjaan_ibu[0]:null;
+				$pf->created_by = $request->user()->id;
+				$pf->updated_by = $request->user()->id;
+				$pf->save();
+			}
+			
+			//saudara
+			$nama_saudara = $request->input('nama_saudara');
+			if(!empty($nama_saudara) && is_array($nama_saudara))
+			{
+				$alamat_saudara = $request->input('alamat_saudara');
+				$pekerjaan_saudara = $request->input('pekerjaan_saudara');
+				
+				for($i = 0; $i < count($nama_saudara); $i++)
+				{
+					$pf = new PersonalFamily;
+					$pf->personal_id = $pd->id;
+					$pf->tipe = 'adik-kakak';
+					$pf->nama = $nama_saudara[$i];
+					$pf->alamat = !empty($alamat_saudara[$i])? $alamat_saudara[$i]:null;
+					$pf->pekerjaan = !empty($pekerjaan_saudara[$i])? $pekerjaan_saudara[$i]:null;
+					$pf->created_by = $request->user()->id;
+					$pf->updated_by = $request->user()->id;
+					$pf->save();
+				}
+			}
+			
+			return response([
+				'url' => '',
+				'api_endpoint' => url('human_resource/'.$type),
+				'api_method' => 'GET',
+				'title' => $menu_title
+			], 200);
+		}
+		
+		return response('bad request', 400);
+	}
+	
+	public function getHrProject(Request $request)
+	{
+		return $this->show($request, 'hr-project');
 	}
 
-	/**
-	 * Display the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function show(Request $request, $id)
+	public function getHrStaf(Request $request)
+	{
+		return $this->show($request, 'hr-staf');
+	}
+
+	private function show(Request $request, $id)
 	{
 		if(!$request->user()->hasMenu($this->get_($this->menu_id, $id)))
 		{
@@ -527,7 +962,7 @@ class HumanResourceController extends Controller
 					'html' => $row->name
 				);
 			}
-			elseif($row->type == 'outsource-position' && $id == 'hr_project')
+			elseif($row->type == 'outsource-position' && $id == 'hr-project')
 			{
 				$dropdown_position[] = array(
 					'attr' => [
@@ -536,7 +971,7 @@ class HumanResourceController extends Controller
 					'html' => $row->name
 				);
 			}
-			elseif($row->type == 'staff-position' && $id == 'hr_staf')
+			elseif($row->type == 'staff-position' && $id == 'hr-staf')
 			{
 				$dropdown_position[] = array(
 					'attr' => [
@@ -616,7 +1051,7 @@ class HumanResourceController extends Controller
 						'attr' => [
 							'title' => 'Edit '.$menu_name,
 							'data-title' => 'Edit '.$menu_title,
-							'data-endpoint' => url("human_resource/{$row->id}/edit?type={$id}"),
+							'data-endpoint' => url("human_resource/edit-personal/{$id}/{$row->id}"),
 							'data-method' => 'GET'
 						],
 						'redirect' => [
@@ -633,7 +1068,7 @@ class HumanResourceController extends Controller
 						'attr' => [
 							'title' => 'Delete '.$menu_name,
 							'data-title' => 'Delete '.$menu_title,
-							'data-endpoint' => url("human_resource/{$row->id}?type={$id}"),
+							'data-endpoint' => url("human_resource/edit-personal/{$id}/{$row->id}"),
 							'data-method' => 'delete',
 							'data-token' => csrf_token()
 						]
@@ -643,8 +1078,11 @@ class HumanResourceController extends Controller
 				$table_data[] = [
 					['type' => 'text', 'text' => $pos],
 					$row_button,
-					['type' => 'text', 'text' => $row->kode],
-					['type' => 'text', 'text' => $row->uraian_rekening],
+					['type' => 'text', 'text' => $row->nama_lengkap],
+					['type' => 'text', 'text' => $row->nama_posisi],
+					['type' => 'text', 'text' => $row->str_tgl_lahir],
+					['type' => 'text', 'text' => ucfirst($row->jenis_kelamin)],
+					['type' => 'text', 'text' => $row->nama_agama],
 				];
 			}
 			else
@@ -659,163 +1097,134 @@ class HumanResourceController extends Controller
 		//get result end }
 		
 		//return result
-		$return_result = [
-			'type' => 'table list',
-			'form' => [
+		
+		//type
+		$return_result['type'] = 'table list';
+		
+		//form attribute
+		$return_result['form']['attr'] = [
+			'method' => 'get',
+			'action' => url('/human_resource/'.$id),
+			'role' => 'form',
+			'data-type' => 'table list',
+			'data-title' => $menu_title,
+			'data-endpoint' => url('/human_resource/'.$id),
+			'data-method' => 'GET'
+		];
+		
+		//form hidden elements
+		$return_result['form']['hidden'] = [
+			['name' => 'page', 'value' => $page],
+			['name' => 'ord', 'value' => $order_by],
+			['name' => 'srt', 'value' => $sort_by],
+		];
+		
+		//form visible elements
+		$return_result['form']['elements'] = array();
+		
+		//block 1
+		$return_result['form']['elements'][0][0] = [
+			[
+				'label' => 'Nama Lengkap', 
+				'element' => 'input',
 				'attr' => [
-					'method' => 'get',
-					'action' => url('/human_resource/'.$id),
-					'role' => 'form',
-					'data-type' => 'table list',
-					'data-title' => $menu_title,
-					'data-endpoint' => url('/human_resource/'.$id),
-					'data-method' => 'GET'
-				],
-			
-				'hidden' => [
-					['name' => 'page', 'value' => $page],
-					['name' => 'ord', 'value' => $order_by],
-					['name' => 'srt', 'value' => $sort_by],
-				],
-				
-				'elements_blok' => [
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Nama Lengkap', 
-								'element' => 'input',
-								'attr' => [
-									'type' => 'text', 
-									'name' => 'kode',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Posisi', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'posisi',
-								],
-								'options' => $dropdown_position
-							],
-						]
-					],
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Jenis Kelamin', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'jenis_kelamin',
-								],
-								'options' => [
-									[
-										'attr' => ['value' => 'pria'],
-										'html' => 'Pria'
-									],
-									[
-										'attr' => ['value' => 'wanita'],
-										'html' => 'Wanita'
-									]
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Agama', 
-								'element' => 'select',
-								'attr' => [
-									'name' => 'agama',
-								],
-								'options' => $dropdown_religion
-							],
-						]
-					],
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => 'Tanggal Lahir', 
-								'element' => 'datepicker_range',
-								'attr' => [
-									'name' => 'tgl_lahir',
-								]
-							],
-						]
-					],
-					[
-						'css_class' => 'clearfix visible-lg-block',
-						'fields' => []
-					],
-					[
-						'css_class' => 'col-lg-6',
-						'fields' => [
-							[
-								'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'submit', 
-									'class' => 'btn btn-primary',
-									'style' => 'margin-right:5px'
-								]
-							],
-							[
-								'label' => 'Reset', 
-								'element' => 'button',
-								'attr' => [
-									'type' => 'reset', 
-									'class' => 'btn btn-warning',
-									'style' => 'margin-right:5px'
-								]
-							],
-						]
-					],
+					'type' => 'text', 
+					'name' => 'kode',
 				]
 			],
-			'form_data' => [
-				'nama_lengkap' => $search['nama_lengkap'],
-				'posisi' => $search['posisi'],
-				'tgl_lahir' => $search['tgl_lahir'],
-				'jenis_kelamin' => $search['jenis_kelamin'],
-				'agama' => $search['agama'],
+			[
+				'label' => 'Jenis Kelamin', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'jenis_kelamin',
+				],
+				'options' => [
+					[
+						'attr' => ['value' => 'pria'],
+						'html' => 'Pria'
+					],
+					[
+						'attr' => ['value' => 'wanita'],
+						'html' => 'Wanita'
+					]
+				]
 			],
-			
-			'total_records' => $total_records,
-			'total_page' => $total_pages,
-			
-			'table_header' => $table_header,
-			
-			'table_data' => $table_data
+			[
+				'label' => 'Tanggal Lahir', 
+				'element' => 'datepicker_range',
+				'attr' => [
+					'name' => 'tgl_lahir',
+				]
+			]
 		];
+		
+		//block 2
+		$return_result['form']['elements'][0][1] = [
+			[
+				'label' => 'Posisi', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'posisi',
+				],
+				'options' => $dropdown_position
+			],
+			[
+				'label' => 'Agama', 
+				'element' => 'select',
+				'attr' => [
+					'name' => 'agama',
+				],
+				'options' => $dropdown_religion
+			]
+		];
+		
+		//block 3 search
+		$return_result['form']['elements'][1][0] = [
+			[
+				'label' => '<span class="glyphicon glyphicon-search"></span> Search', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'submit', 
+					'class' => 'btn btn-primary',
+					'style' => 'margin-right:5px'
+				]
+			],
+			[
+				'label' => 'Reset', 
+				'element' => 'button',
+				'attr' => [
+					'type' => 'reset', 
+					'class' => 'btn btn-warning',
+					'style' => 'margin-right:5px'
+				]
+			],
+		];
+		
+		//form data
+		$return_result['form_data'] = [
+			'nama_lengkap' => $search['nama_lengkap'],
+			'posisi' => $search['posisi'],
+			'tgl_lahir' => $search['tgl_lahir'],
+			'jenis_kelamin' => $search['jenis_kelamin'],
+			'agama' => $search['agama'],
+		];
+			
+		$return_result['total_records'] = $total_records;
+		$return_result['total_page'] = $total_pages;
+		$return_result['table_header'] = $table_header;
+		$return_result['table_data'] = $table_data;
 		
 		//punya akses post, kasih button input user
 		if($request->user()->hasMenu($this->get_($this->menu_id, $id), 'post'))
 		{
-			$return_result['form']['elements_blok'][8]['fields'][] = [
+			$return_result['form']['elements'][1][0][] = [
 				'label' => '<span class="glyphicon glyphicon-plus"></span> Tambah '.$menu_name, 
 				'element' => 'button',
 				'attr' => [
 					'type' => 'button',
 					'class' => 'btn btn-success',
 					'data-title' => 'Input '.$menu_title,
-					'data-endpoint' => url('human_resource/create?type='.$id),
+					'data-endpoint' => url('human_resource/personal?type='.$id),
 					'data-method' => 'get'
 				],
 				'redirect' => [
@@ -826,49 +1235,5 @@ class HumanResourceController extends Controller
 		}
 		
 		return response($return_result, 200);
-	}
-
-	/**
-	 * Show the form for editing the specified resource.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function edit($id)
-	{
-		//
-	}
-
-	/**
-	 * Update the specified resource in storage.
-	 *
-	 * @param  Request  $request
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function update(Request $request, $id)
-	{
-		//
-	}
-
-	/**
-	 * Remove the specified resource from storage.
-	 *
-	 * @param  int  $id
-	 * @return Response
-	 */
-	public function destroy($id)
-	{
-		//
-	}
-	
-	//cek menu_id dan account_type_id
-	private function get_($key, $id)
-	{
-		if(array_key_exists($id, $key))
-		{
-			return $key[$id];
-		}
-		return 0;
 	}
 }

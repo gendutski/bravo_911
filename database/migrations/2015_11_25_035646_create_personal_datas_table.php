@@ -38,8 +38,16 @@ class CreatePersonalDatasTable extends Migration
 			$table->integer('status_tempat_tinggal')->unsigned();
 			$table->string('no_call_rumah', 30)->nullable();
 			$table->string('no_contact_person', 30)->nullable();
-			$table->string('no_tlp_rumah_darurat', 30)->nullable();
-			$table->string('no_ponsel_darurat', 30)->nullable();
+			$table->boolean('tanggungan_pasangan'); //suami/istri menjadi tanggungan
+			$table->integer('jumlah_anak')->default(0);
+			$table->integer('anak_ke')->default(0);
+			$table->integer('jumlah_saudara')->default(0);
+			$table->string('nama_darurat', 255)->nullable();
+			$table->string('hubungan_darurat', 255)->nullable();
+			$table->string('pekerjaan_darurat', 255)->nullable();
+			$table->text('alamat_darurat')->nullable();
+			$table->string('telp_darurat', 20)->nullable();
+			$table->string('ponsel_darurat', 20)->nullable();
 			
 			$table->integer('created_by');
 			$table->integer('updated_by');

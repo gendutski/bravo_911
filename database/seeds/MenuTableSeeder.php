@@ -246,7 +246,7 @@ class MenuTableSeeder extends Seeder
 				//'id' => 28,
 				'name' => 'HR Project',
 				'title' => 'Human Resource: Project',
-				'api_endpoint' => '/human_resource/hr_project',
+				'api_endpoint' => '/human_resource/hr-project',
 				'parent_id' => 12,
 				'rank' => 1
 			],
@@ -254,7 +254,7 @@ class MenuTableSeeder extends Seeder
 				//'id' => 29,
 				'name' => 'HR Staf',
 				'title' => 'Human Resource Staf',
-				'api_endpoint' => '/human_resource/hr_staf',
+				'api_endpoint' => '/human_resource/hr-staf',
 				'parent_id' => 12,
 				'rank' => 2
 			],

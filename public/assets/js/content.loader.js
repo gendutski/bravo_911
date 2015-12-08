@@ -446,9 +446,14 @@ var ContentLoader = function(box_element, title_element)
 								} catch(err){
 									
 								}
-							} else if(elm.element == 'blank_div'){
-								var element = document.createElement('div');
-								$(element).attr(elm.attr);
+							} else if(elm.element == 'header'){
+								var element = document.createElement('h3');
+								$(element).html(elm.label);
+								$(element).addClass('page-header');
+								
+								if(typeof(elm.attr) != 'undefined'){
+									$(element).attr(elm.attr);
+								}
 								
 								//append data
 								$(div).append(element);

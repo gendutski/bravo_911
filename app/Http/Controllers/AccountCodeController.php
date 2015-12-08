@@ -554,15 +554,4 @@ class AccountCodeController extends Controller
 		}
 		return response('bad request', 400);
 	}
-	
-	//cek menu_id dan account_type_id
-	private function get_($key, $id)
-	{
-		if(array_key_exists($id, $key))
-		{
-			return $key[$id];
-		}
-		return 0;
-	}
-	
 }

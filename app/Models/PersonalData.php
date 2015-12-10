@@ -11,6 +11,11 @@ class PersonalData extends Model
 	protected $primaryKey = 'id';
 	
 	
+	public function family()
+	{
+		return $this->hasMany('App\Models\PersonalFamily', 'personal_id');
+	}
+	
 	public function position()
 	{
 		return $this->belongsTo('App\Models\Param', 'posisi');

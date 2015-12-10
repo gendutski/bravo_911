@@ -598,10 +598,11 @@ class HumanResourceController extends Controller
 		return response($return_result, 200);
 	}
 
-	public function getEditPersonal(Request $request, $type, $id)
+	public function getEditPersonal(Request $request, $id)
 	{
 		//request
 		$redirect_url = $request->input('redirect');
+		$type = $request->input('type');
 		
 		if(!$request->user()->hasMenu($this->get_($this->menu_id, $type), 'put'))
 		{
@@ -616,7 +617,6 @@ class HumanResourceController extends Controller
 		){ return response('not found', 404); }
 		
 		$return_result = $this->getPersonal($request)->original;
-		var_dump($return_result);exit;
 		
 		//set action
 		$return_result['form']['attr']['action'] = url('human_resource/personal/'.$id.'?type='.$type);
@@ -656,7 +656,48 @@ class HumanResourceController extends Controller
 			'alamat_darurat' => $pd->alamat_darurat,
 			'telp_darurat' => $pd->telp_darurat,
 			'ponsel_darurat' => $pd->ponsel_darurat,
+			'anak_ke' => $pd->anak_ke,
+			'jumlah_saudara' => $pd->jumlah_saudara,
 		];
+		
+		//family
+		$family = $pd->family;
+		
+		foreach($family as $row)
+		{
+			if($row->tipe == 'suami-istri')
+			{
+				$return_result['form_data']['nama_pasangan'] = $row->nama;
+				$return_result['form_data']['tempat_lahir_pasangan'] = $row->tempat_lahir;
+				$return_result['form_data']['tgl_lahir_pasangan'] = $row->tgl_lahir;
+				$return_result['form_data']['pekerjaan_pasangan'] = $row->pekerjaan;
+				$return_result['form_data']['alamat_pasangan'] = $row->alamat;
+			}
+			elseif($row->tipe == 'anak')
+			{
+				$return_result['form_data']['nama_anak[]'][] = $row->nama;
+				$return_result['form_data']['tempat_lahir_anak[]'][] = $row->tempat_lahir;
+				$return_result['form_data']['tgl_lahir_anak[]'][] = $row->tgl_lahir;
+			}
+			elseif($row->tipe == 'ayah')
+			{
+				$return_result['form_data']['nama_ayah[]'] = $row->nama;
+				$return_result['form_data']['pekerjaan_ayah[]'] = $row->pekerjaan;
+				$return_result['form_data']['alamat_ayah[]'] = $row->alamat;
+			}
+			elseif($row->tipe == 'ibu')
+			{
+				$return_result['form_data']['nama_ibu[]'] = $row->nama;
+				$return_result['form_data']['pekerjaan_ibu[]'] = $row->pekerjaan;
+				$return_result['form_data']['alamat_ibu[]'] = $row->alamat;
+			}
+			elseif($row->tipe == 'adik-kakak')
+			{
+				$return_result['form_data']['nama_saudara[]'] = $row->nama;
+				$return_result['form_data']['pekerjaan_saudara[]'] = $row->pekerjaan;
+				$return_result['form_data']['alamat_saudara[]'] = $row->alamat;
+			}
+		}
 		
 		return response($return_result, 200);
 	}
@@ -762,6 +803,259 @@ class HumanResourceController extends Controller
 		
 		//save personal
 		$pd = new PersonalData;
+		$pd->nama_lengkap = $request->input('nama_lengkap');
+		$pd->posisi = $request->input('posisi');
+		$pd->asal_ktp = $request->input('asal_ktp');
+		$pd->no_ktp = $request->input('no_ktp');
+		$pd->alamat_ktp = $request->input('alamat_ktp');
+		$pd->masa_berlaku_ktp = $request->input('masa_berlaku_ktp');
+		$pd->no_jamsostek = $request->input('no_jamsostek', null);
+		$pd->no_npwp = $request->input('no_npwp', null);
+		$pd->no_id_kta_security = $request->input('no_id_kta_security', null);
+		$pd->no_reg_kta_security = $request->input('no_reg_kta_security', null);
+		$pd->suku_bangsa = $request->input('suku_bangsa');
+		$pd->email = $request->input('email');
+		$pd->status_menikah = $request->input('status_menikah') == 'ya'? true:false;
+		$pd->tempat_lahir = $request->input('tempat_lahir');
+		$pd->tgl_lahir = $request->input('tgl_lahir');
+		$pd->jenis_kelamin = $request->input('jenis_kelamin');
+		$pd->agama = $request->input('agama');
+		$pd->tinggi_badan = $request->input('tinggi_badan');
+		$pd->berat_badan = $request->input('berat_badan');
+		$pd->alamat_tinggal_sekarang = $request->input('alamat_tinggal_sekarang');
+		$pd->kabupaten = $request->input('kabupaten');
+		$pd->status_tempat_tinggal = $request->input('status_tempat_tinggal');
+		$pd->no_call_rumah = $request->input('no_call_rumah');
+		$pd->no_contact_person = $request->input('no_contact_person');
+		$pd->tanggungan_pasangan = $request->input('tanggungan_pasangan') == 'ya'? true:false;
+		$pd->nama_darurat = $request->input('nama_darurat');
+		$pd->jumlah_anak = count($arr_anak);
+		$pd->anak_ke = $request->input('anak_ke');
+		$pd->jumlah_saudara = $request->input('jumlah_saudara');
+		$pd->nama_darurat = $request->input('nama_darurat', null);
+		$pd->hubungan_darurat = $request->input('hubungan_darurat', null);
+		$pd->pekerjaan_darurat = $request->input('pekerjaan_darurat', null);
+		$pd->alamat_darurat = $request->input('alamat_darurat', null);
+		$pd->telp_darurat = $request->input('telp_darurat');
+		$pd->ponsel_darurat = $request->input('ponsel_darurat');
+		
+		$pd->created_by = $request->user()->id;
+		$pd->updated_by = $request->user()->id;
+		if($pd->save())
+		{
+			
+			//keluarga 1
+			if($pd->status_menikah)
+			{
+				//save istri
+				$pf = new PersonalFamily;
+				$pf->personal_id = $pd->id;
+				$pf->tipe = 'suami-istri';
+				$pf->nama = $request->input('nama_pasangan');
+				$pf->tempat_lahir = $request->input('tempat_lahir_pasangan');
+				$pf->tgl_lahir = $request->input('tgl_lahir_pasangan');
+				$pf->alamat = $request->input('alamat_pasangan');
+				$pf->pekerjaan = $request->input('pekerjaan_pasangan');
+				
+				$pf->created_by = $request->user()->id;
+				$pf->updated_by = $request->user()->id;
+				$pf->save();
+				
+				//save anak
+				if(!empty($arr_anak))
+				{
+					foreach($arr_anak as $anak)
+					{
+						$pf = new PersonalFamily;
+						$pf->personal_id = $pd->id;
+						$pf->tipe = 'anak';
+						$pf->nama = $anak[0];
+						$pf->tempat_lahir = $anak[1];
+						$pf->tgl_lahir = $anak[2];
+						
+						$pf->created_by = $request->user()->id;
+						$pf->updated_by = $request->user()->id;
+						$pf->save();
+					}
+				}
+			}
+			
+			//ayah
+			$nama_ayah = $request->input('nama_ayah');
+			if(!empty($nama_ayah) && is_array($nama_ayah))
+			{
+				$alamat_ayah = $request->input('alamat_ayah');
+				$pekerjaan_ayah = $request->input('pekerjaan_ayah');
+				
+				$pf = new PersonalFamily;
+				$pf->personal_id = $pd->id;
+				$pf->tipe = 'ayah';
+				$pf->nama = $nama_ayah[0];
+				$pf->alamat = (!empty($alamat_ayah) && is_array($alamat_ayah))? $alamat_ayah[0]:null;
+				$pf->pekerjaan = (!empty($pekerjaan_ayah) && is_array($pekerjaan_ayah))? $pekerjaan_ayah[0]:null;
+				$pf->created_by = $request->user()->id;
+				$pf->updated_by = $request->user()->id;
+				$pf->save();
+			}
+			
+			//ibu
+			$nama_ibu = $request->input('nama_ibu');
+			if(!empty($nama_ibu) && is_array($nama_ibu))
+			{
+				$alamat_ibu = $request->input('alamat_ibu');
+				$pekerjaan_ibu = $request->input('pekerjaan_ibu');
+				
+				$pf = new PersonalFamily;
+				$pf->personal_id = $pd->id;
+				$pf->tipe = 'ibu';
+				$pf->nama = $nama_ibu[0];
+				$pf->alamat = (!empty($alamat_ibu) && is_array($alamat_ibu))? $alamat_ibu[0]:null;
+				$pf->pekerjaan = (!empty($pekerjaan_ibu) && is_array($pekerjaan_ibu))? $pekerjaan_ibu[0]:null;
+				$pf->created_by = $request->user()->id;
+				$pf->updated_by = $request->user()->id;
+				$pf->save();
+			}
+			
+			//saudara
+			$nama_saudara = $request->input('nama_saudara');
+			if(!empty($nama_saudara) && is_array($nama_saudara))
+			{
+				$alamat_saudara = $request->input('alamat_saudara');
+				$pekerjaan_saudara = $request->input('pekerjaan_saudara');
+				
+				for($i = 0; $i < count($nama_saudara); $i++)
+				{
+					$pf = new PersonalFamily;
+					$pf->personal_id = $pd->id;
+					$pf->tipe = 'adik-kakak';
+					$pf->nama = $nama_saudara[$i];
+					$pf->alamat = !empty($alamat_saudara[$i])? $alamat_saudara[$i]:null;
+					$pf->pekerjaan = !empty($pekerjaan_saudara[$i])? $pekerjaan_saudara[$i]:null;
+					$pf->created_by = $request->user()->id;
+					$pf->updated_by = $request->user()->id;
+					$pf->save();
+				}
+			}
+			
+			return response([
+				'url' => '',
+				'api_endpoint' => url('human_resource/'.$type),
+				'api_method' => 'GET',
+				'title' => $menu_title
+			], 200);
+		}
+		
+		return response('bad request', 400);
+	}
+	
+	public function putPersonal(Request $request, $id)
+	{
+		//request
+		$type = $request->input('type');
+		$redirect_url = $request->input('redirect');
+		
+		//check privilege
+		if(!$request->user()->hasMenu($this->get_($this->menu_id, $type), 'post'))
+		{
+			return response('Forbidden', 403);
+		}
+		
+		//validate
+		$this->validate(
+			$request, 
+			[
+				'posisi' => 'required',
+				'nama_lengkap' => 'required|max:255',
+				'asal_ktp' => 'required',
+				'no_ktp' => 'required|max:100',
+				'alamat_ktp' => 'required',
+				'masa_berlaku_ktp' => 'required',
+				'suku_bangsa' => 'required',
+				'email' => 'required|max:255|unique:personal_datas,email',
+				'status_menikah' => 'required',
+				'tempat_lahir' => 'required',
+				'tgl_lahir' => 'required',
+				'jenis_kelamin' => 'required',
+				'agama' => 'required',
+				'tinggi_badan' => 'required|numeric',
+				'berat_badan' => 'required|numeric',
+				'alamat_tinggal_sekarang' => 'required',
+				'kabupaten' => 'required',
+				'status_tempat_tinggal' => 'required',
+				'telp_darurat' => 'required',
+				'ponsel_darurat' => 'required',
+				
+				'nama_pasangan' => 'required_if:status_menikah,ya',
+				'tempat_lahir_pasangan' => 'required_if:status_menikah,ya',
+				'tgl_lahir_pasangan' => 'required_if:status_menikah,ya',
+				'pekerjaan_pasangan' => 'required_if:status_menikah,ya',
+				'tanggungan_pasangan' => 'required_if:status_menikah,ya',
+				'alamat_pasangan' => 'required_if:status_menikah,ya',
+				
+				'anak_ke' => 'numeric',
+				'jumlah_saudara' => 'numeric',
+			],
+			[
+				'posisi.required' => '<span style="font-weight:bold;font-style:italic">Posisi</span> harap di isi',
+				'nama_lengkap.required' => '<span style="font-weight:bold;font-style:italic">Nama Lengkap</span> harap di isi',
+				'asal_ktp.required' => '<span style="font-weight:bold;font-style:italic">Asal KTP</span> harap di isi',
+				'no_ktp.required' => '<span style="font-weight:bold;font-style:italic">No KTP</span> harap di isi',
+				'alamat_ktp.required' => '<span style="font-weight:bold;font-style:italic">Alamat di KTP</span> harap di isi',
+				'masa_berlaku_ktp.required' => '<span style="font-weight:bold;font-style:italic">Masa Berlaku KTP</span> harap di isi',
+				'suku_bangsa.required' => '<span style="font-weight:bold;font-style:italic">Suku Bangsa</span> harap di isi',
+				'email.required' => '<span style="font-weight:bold;font-style:italic">Alamat Email</span> harap di isi',
+				'email.unique' => '<span style="font-weight:bold;font-style:italic">'.$request->input('email').'</span> sudah terdaftar. Harap pilih alamat email yang lain!',
+				'status_menikah.required' => '<span style="font-weight:bold;font-style:italic">Status Perkawinan</span> harap di isi',
+				'tempat_lahir.required' => '<span style="font-weight:bold;font-style:italic">Tempat Lahir</span> harap di isi',
+				'tgl_lahir.required' => '<span style="font-weight:bold;font-style:italic">Tanggal Lahir</span> harap di isi',
+				'jenis_kelamin.required' => '<span style="font-weight:bold;font-style:italic">Jenis Kelamin</span> harap di isi',
+				'agama.required' => '<span style="font-weight:bold;font-style:italic">Agama</span> harap di isi',
+				'tinggi_badan.required' => '<span style="font-weight:bold;font-style:italic">Tinggi Badan</span> harap di isi',
+				'tinggi_badan.numeric' => '<span style="font-weight:bold;font-style:italic">Tinggi Badan</span> harap di isi angka',
+				'berat_badan.required' => '<span style="font-weight:bold;font-style:italic">Berat Badan</span> harap di isi',
+				'berat_badan.numeric' => '<span style="font-weight:bold;font-style:italic">Berat Badan</span> harap di isi angka',
+				'alamat_tinggal_sekarang.required' => '<span style="font-weight:bold;font-style:italic">Alamat Tinggal Sekarang</span> harap di isi',
+				'kabupaten.required' => '<span style="font-weight:bold;font-style:italic">Kota / Kabupaten</span> harap di isi',
+				'status_tempat_tinggal.required' => '<span style="font-weight:bold;font-style:italic">Status Tmpt Tinggal</span> harap di isi',
+				'telp_darurat.required' => '<span style="font-weight:bold;font-style:italic">No-Tlp.Rumah Darurat</span> harap di isi',
+				'ponsel_darurat.required' => '<span style="font-weight:bold;font-style:italic">No.Ponsel/Darurat</span> harap di isi',
+				
+				'nama_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Nama Suami/Istri</span> harap di isi',
+				'tempat_lahir_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Tempat Lahir Suami/Istri</span> harap di isi',
+				'tgl_lahir_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Tanggal Lahir Suami/Istri</span> harap di isi',
+				'pekerjaan_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Pekerjaan Suami/Istri</span> harap di isi',
+				'tanggungan_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Apakah Suami/Istri Menjadi Tanggung Jawab Anda?</span> harap di isi',
+				'alamat_pasangan.required_if' => '<span style="font-weight:bold;font-style:italic">Alamat Suami/Istri</span> harap di isi',
+				
+			]
+		);
+		
+		//menu title
+		$menu = Menu::findOrFail($this->get_($this->menu_id, $type));
+		$menu_title = $menu->title;
+		
+		//cek data
+		$pd = PersonalData::findOrFail($id);
+		$check_position = $pd->position->type;
+		if(
+			($type == 'hr-project' && $check_position != 'outsource-position') ||
+			($type == 'hr-staf' && $check_position != 'staff-position') 
+		){ return response('not found', 404); }
+		
+		//hitung anak
+		$arr_anak = array();
+		$nama_anak = $request->input('nama_anak');
+		$tempat_lahir_anak = $request->input('tempat_lahir_anak');
+		$tgl_lahir_anak = $request->input('tgl_lahir_anak');
+		for($i = 0; $i < count($request->input('nama_anak')); $i++)
+		{
+			if(!empty($nama_anak[$i]) && !empty($tempat_lahir_anak[$i]) && !empty($tgl_lahir_anak[$i]))
+			{
+				$arr_anak[] = [$nama_anak[$i], $tempat_lahir_anak[$i], $tgl_lahir_anak[$i]];
+			}
+		}
+		
+		//save personal
 		$pd->nama_lengkap = $request->input('nama_lengkap');
 		$pd->posisi = $request->input('posisi');
 		$pd->asal_ktp = $request->input('asal_ktp');
@@ -1051,7 +1345,7 @@ class HumanResourceController extends Controller
 						'attr' => [
 							'title' => 'Edit '.$menu_name,
 							'data-title' => 'Edit '.$menu_title,
-							'data-endpoint' => url("human_resource/edit-personal/{$id}/{$row->id}"),
+							'data-endpoint' => url("human_resource/edit-personal/{$row->id}?type={$id}"),
 							'data-method' => 'GET'
 						],
 						'redirect' => [
@@ -1068,7 +1362,7 @@ class HumanResourceController extends Controller
 						'attr' => [
 							'title' => 'Delete '.$menu_name,
 							'data-title' => 'Delete '.$menu_title,
-							'data-endpoint' => url("human_resource/edit-personal/{$id}/{$row->id}"),
+							'data-endpoint' => url("human_resource/edit-personal/{$row->id}?type={$id}"),
 							'data-method' => 'delete',
 							'data-token' => csrf_token()
 						]

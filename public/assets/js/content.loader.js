@@ -529,7 +529,12 @@ var ContentLoader = function(box_element, title_element)
 								
 								//set element value
 								if(typeof(elm.attr.value) == 'undefined' && typeof($form_data[elm.attr.name]) != 'undefined'){
-									$(element).val($form_data[elm.attr.name]);
+									if(Object.prototype.toString.call($form_data[elm.attr.name]) ==='[object Array]'){
+										var _t = $form_data[elm.attr.name].shift();
+										$(element).val(_t);
+									} else {
+										$(element).val($form_data[elm.attr.name]);
+									}
 								}
 							}
 						});
